@@ -1,0 +1,8 @@
+#!/bin/bash
+[[ -f ./setup ]] && source ./setup
+
+sed -i "s#ROOT_URL.*=.*#ROOT_URL=${EXTERNAL_URL}#g" /data/gitea/conf/app.ini
+
+pushd /app/gitea > /dev/null
+    exec su-exec git /app/gitea/gitea web
+popd
