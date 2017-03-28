@@ -17,8 +17,8 @@ services:
             context: ./gitserver/
             args:
             - FIRST_USER=butler
-            - FIRST_REPO_NAME=example-voting-app
-            - SOURCE_REPO_TO_MIRROR=https://github.com/jgsqware/example-voting-app
+            - FIRST_REPO_NAME=worker
+            - SOURCE_REPO_TO_MIRROR=https://github.com/jenkins-demo-org/worker
         restart: unless-stopped
         extra_hosts:
         - "${EXTERNAL_DOMAIN}:172.17.0.1" # For webhooks
