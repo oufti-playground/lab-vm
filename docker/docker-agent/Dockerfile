@@ -1,42 +1,40 @@
-FROM docker:17.03.0-ce-dind
+FROM docker:dind
 
 ARG user=jenkins
 ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
-ARG JENKINS_AGENT_HOME=/home/${user}
 
-ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
+ENV JENKINS_AGENT_HOME=/home/${user} \
+  JAVA_HOME=/usr/lib/jvm/default-jvm
 
-RUN addgroup -g ${gid} ${group} \
-    && adduser \
-        -h "${JENKINS_AGENT_HOME}" \
-        -u "${uid}" \
-        -G "${group}" \
-        -s /bin/bash \
-        -D "${user}" \
-    && echo "${user}:${user}" | chpasswd
-
-# setup SSH server
 RUN apk add --update --no-cache \
-    bash \
-    git \
-    openssh \
-    openjdk8
-RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
-RUN sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
-RUN sed -i 's/#SyslogFacility.*/SyslogFacility AUTH/' /etc/ssh/sshd_config
-RUN sed -i 's/#LogLevel.*/LogLevel INFO/' /etc/ssh/sshd_config
+  bash \
+  curl \
+  ca-certificates \
+  git \
+  openjdk8 \
+  openssh \
+  tar \
+  && addgroup -g ${gid} ${group} \
+  && adduser -h "${JENKINS_AGENT_HOME}" -u "${uid}" -G "${group}" -D -s /bin/bash "${user}" \
+  && passwd -u jenkins \
+  && sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config \
+  && sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config \
+  && sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config \
+  && sed -i 's/#SyslogFacility.*/SyslogFacility AUTH/' /etc/ssh/sshd_config \
+  && sed -i 's/#LogLevel.*/LogLevel INFO/' /etc/ssh/sshd_config \
+  && sed -i 's/#PermitUserEnvironment.*/PermitUserEnvironment yes/' /etc/ssh/sshd_config \
+  && sed -i 's/#UseDNS.*/UseDNS no/' /etc/ssh/sshd_config \
+  && addgroup docker \
+  && addgroup jenkins docker \
+  && mkdir /var/run/sshd
 
-RUN mkdir /var/run/sshd
-RUN rm -f /var/log/auth.log && ln -s /dev/stdout /var/log/auth.log
-
-VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
+VOLUME "${JENKINS_AGENT_HOME}" "/tmp"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
-COPY entrypoint.sh /usr/local/bin/
+COPY setup-sshd /usr/local/bin/setup-sshd
 
 EXPOSE 22
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["setup-sshd"]

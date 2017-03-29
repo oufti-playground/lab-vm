@@ -38,6 +38,9 @@ services:
         build: ./docker-agent/
         restart: unless-stopped
         privileged: true
+        tmpfs:
+        - /var/run
+        - /run
         extra_hosts:
         - "${EXTERNAL_DOMAIN}:172.17.0.1" # For getting git repo
         environment:

@@ -9,6 +9,12 @@ write_key() {
 	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
 }
 
+set_ssh_env() {
+  mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
+  echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+    | tee "${JENKINS_AGENT_HOME}/.ssh/environment"
+}
+
 if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
   write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
 fi
@@ -20,6 +26,8 @@ if [[ $# -gt 0 ]]; then
     exec "$@"
   fi
 fi
+set_ssh_env
 ssh-keygen -A
-/usr/sbin/sshd -e "${@}"
-/usr/local/bin/dockerd-entrypoint.sh --bip=192.168.1.5/24
+
+nohup bash dockerd-entrypoint.sh --bip 192.168.0.1/24 &> /dev/stdout&
+exec /usr/sbin/sshd -D -e "${@}"

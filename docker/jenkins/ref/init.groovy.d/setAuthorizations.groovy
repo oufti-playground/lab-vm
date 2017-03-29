@@ -4,6 +4,14 @@ import hudson.security.*
 
 def instance = Jenkins.getInstance()
 
-def strategy = new hudson.security.FullControlOnceLoggedInAuthorizationStrategy()
-strategy.setAllowAnonymousRead(false)
-instance.setAuthorizationStrategy(strategy)
+def strategy = new ProjectMatrixAuthorizationStrategy()
+
+strategy.add(Jenkins.ADMINISTER, "butler")
+strategy.add(Jenkins.READ, "anonymous")
+strategy.add(hudson.model.Item.READ,'anonymous')
+strategy.add(hudson.model.Item.BUILD,'anonymous')
+
+if(!strategy.equals(instance.getSecurityRealm())) {
+    instance.setAuthorizationStrategy(strategy)
+    instance.save()
+}
