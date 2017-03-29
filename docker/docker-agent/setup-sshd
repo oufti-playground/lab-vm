@@ -29,5 +29,5 @@ fi
 set_ssh_env
 ssh-keygen -A
 
-nohup bash dockerd-entrypoint.sh --bip 192.168.0.1/24 &> /dev/stdout&
+nohup bash dockerd-entrypoint.sh --bip "${DOCKER_BIP:=172.17.0.1}/24" &> /dev/stdout&
 exec /usr/sbin/sshd -D -e "${@}"

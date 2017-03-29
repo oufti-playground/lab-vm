@@ -16,3 +16,5 @@ ls -altrh
 docker-compose pull
 docker-compose build
 docker-compose up -d
+
+# Pre-Load Docker images in the local registry

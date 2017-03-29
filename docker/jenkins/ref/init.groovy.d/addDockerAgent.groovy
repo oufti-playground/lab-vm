@@ -49,7 +49,5 @@ Slave agent = new DumbSlave(
   new LinkedList()
 )
 
-agent.getNodeProperties().add(envPro)
-
 Jenkins.instance.addNode(agent)
 println("Added successfully 'docker-agent' to Jenkins")
