@@ -29,7 +29,7 @@ Slave agent = new DumbSlave(
   "docker-node",
   "Agent node for Docker",
   "/home/jenkins",
-  "1",
+  2,
   Node.Mode.NORMAL,
   "docker",
   new SSHLauncher(

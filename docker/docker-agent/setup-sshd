@@ -29,5 +29,10 @@ fi
 set_ssh_env
 ssh-keygen -A
 
-nohup bash dockerd-entrypoint.sh --bip "${DOCKER_BIP:=172.17.0.1}/24" &> /dev/stdout&
+nohup bash dockerd-entrypoint.sh \
+  --bip "${DOCKER_BIP}/24" \
+  --fixed-cidr	"${DOCKER_BIP}/24" \
+  --insecure-registry "172.17.0.1:5000" \
+  &> /dev/stdout&
+
 exec /usr/sbin/sshd -D -e "${@}"

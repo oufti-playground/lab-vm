@@ -1,4 +1,4 @@
-FROM docker:dind
+FROM docker:17.03.0-ce-dind
 
 ARG user=jenkins
 ARG group=jenkins
