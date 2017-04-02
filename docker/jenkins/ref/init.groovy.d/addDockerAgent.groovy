@@ -18,7 +18,9 @@ credentials = new BasicSSHUserPrivateKey(
   CredentialsScope.SYSTEM,
   "ssh-agent-key",
   "jenkins",
-  new BasicSSHUserPrivateKey.FileOnMasterPrivateKeySource('/usr/share/jenkins/ref/insecure_vagrant_key'),
+  new BasicSSHUserPrivateKey.FileOnMasterPrivateKeySource(
+    '/usr/share/jenkins/ref/insecure_vagrant_key'
+  ),
   '',
   "SSH Key for the Agent"
 )
@@ -29,7 +31,7 @@ Slave agent = new DumbSlave(
   "docker-node",
   "Agent node for Docker",
   "/home/jenkins",
-  2,
+  "2",
   Node.Mode.NORMAL,
   "docker",
   new SSHLauncher(
