@@ -7,6 +7,7 @@ services:
 
     front:
         build: ./front/
+        container_name: front
         restart: unless-stopped
         depends_on:
         - gitserver
@@ -22,6 +23,7 @@ services:
             - FIRST_USER=butler
             - FIRST_REPO_NAME=worker
             - SOURCE_REPO_TO_MIRROR=https://github.com/jenkins-demo-org/worker
+        container_name: gitserver
         restart: unless-stopped
         extra_hosts:
         - "${EXTERNAL_DOMAIN}:172.17.0.1" # For webhooks
@@ -30,6 +32,7 @@ services:
 
     jenkins:
         build: ./jenkins/
+        container_name: jenkins
         restart: unless-stopped
         extra_hosts:
         - "${EXTERNAL_DOMAIN}:172.17.0.1" # For getting git repo
@@ -38,6 +41,7 @@ services:
 
     docker-agent:
         build: ./docker-agent/
+        container_name: docker-agent
         restart: unless-stopped
         volumes:
         - agent-data:/home/jenkins
@@ -50,6 +54,7 @@ services:
     devbox:
         build: ./devbox/
         restart: unless-stopped
+        container_name: devbox
         ports:
         - "9090:9090"
         environment:
@@ -59,12 +64,14 @@ services:
 
     registry:
       image: registry:2
+      container_name: registry
       restart: unless-stopped
       ports:
       - "5000:5000"
 
     docker-service:
       image: verb/socat:alpine
+      container_name: docker-service
       restart: unless-stopped
       command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
       ports:
