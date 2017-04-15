@@ -1,14 +1,13 @@
-FROM gitea/gitea:1.0.1
-
-ENV EXTERNAL_URL=http://localhost:3000
+FROM gogs/gogs:0.11.4
 
 ARG FIRST_USER=dev
-ARG FIRST_REPO_NAME=gitea
-ARG SOURCE_REPO_TO_MIRROR=https://github.com/go-gitea/gitea
 
-COPY ./setup-gitea.sh /app/setup-gitea.sh
+COPY ./setup-gogs.sh /app/setup-gogs.sh
 COPY ./app.ini /etc/templates/app.ini
-COPY ./run /etc/s6/gitea/run
-RUN chmod a+x /etc/s6/gitea/run \
-    && bash /app/setup-gitea.sh
+COPY ./repos-to-mirror /app/repos-to-mirror
+
+RUN echo 'sed "s#ROOT_URL.*=.*#ROOT_URL=${EXTERNAL_URL}#g" /etc/templates/app.ini > /data/gogs/conf/app.ini' \
+  >> /app/gogs/docker/s6/gogs/setup \
+  && bash /app/setup-gogs.sh
+
 VOLUME "/app/data"

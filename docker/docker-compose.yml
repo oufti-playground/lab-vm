@@ -5,76 +5,74 @@ volumes:
 
 services:
 
-    front:
-        build: ./front/
-        container_name: front
-        restart: unless-stopped
-        depends_on:
-        - gitserver
-        - jenkins
-        - devbox
-        ports:
-        - "10000:10000"
+  front:
+    build: ./front/
+    container_name: front
+    restart: unless-stopped
+    depends_on:
+    - gitserver
+    - jenkins
+    - devbox
+    ports:
+    - "10000:10000"
 
-    gitserver:
-        build:
-            context: ./gitserver/
-            args:
-            - FIRST_USER=butler
-            - FIRST_REPO_NAME=worker
-            - SOURCE_REPO_TO_MIRROR=https://github.com/jenkins-demo-org/worker
-        container_name: gitserver
-        restart: unless-stopped
-        extra_hosts:
-        - "${EXTERNAL_DOMAIN}:172.17.0.1" # For webhooks
-        environment:
-        - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:10000/gitserver
+  gitserver:
+    build:
+      context: ./gitserver/
+      args:
+      - FIRST_USER=butler
+    container_name: gitserver
+    restart: unless-stopped
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}" # For webhooks
+    environment:
+    - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
 
-    jenkins:
-        build: ./jenkins/
-        container_name: jenkins
-        restart: unless-stopped
-        extra_hosts:
-        - "${EXTERNAL_DOMAIN}:172.17.0.1" # For getting git repo
-        environment:
-        - JENKINS_OPTS=--prefix=/jenkins
+  jenkins:
+    build: ./jenkins/
+    container_name: jenkins
+    restart: unless-stopped
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}" # For getting git repo
+    environment:
+    - JENKINS_OPTS=--prefix=/jenkins
 
-    docker-agent:
-        build: ./docker-agent/
-        container_name: docker-agent
-        restart: unless-stopped
-        volumes:
-        - agent-data:/home/jenkins
-        - /var/run/docker.sock:/var/run/docker.sock
-        extra_hosts:
-        - "${EXTERNAL_DOMAIN}:172.17.0.1" # For getting git repo
-        environment:
-        - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+  docker-agent:
+    build: ./docker-agent/
+    container_name: docker-agent
+    restart: unless-stopped
+    volumes:
+    - agent-data:/home/jenkins
+    - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}" # For getting git repo
+    environment:
+    - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
-    devbox:
-        build: ./devbox/
-        restart: unless-stopped
-        container_name: devbox
-        ports:
-        - "9090:9090"
-        environment:
-        - DOCKER_HOST=tcp://docker-service:2375
-        extra_hosts:
-        - "${EXTERNAL_DOMAIN}:172.17.0.1" # For getting git repo
+  devbox:
+    build: ./devbox/
+    restart: unless-stopped
+    container_name: devbox
+    ports:
+    - "9090:9090"
+    environment:
+    - DOCKER_HOST=tcp://docker-service:2375
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}" # For getting git repo
 
-    registry:
-      image: registry:2
-      container_name: registry
-      restart: unless-stopped
-      ports:
-      - "5000:5000"
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: unless-stopped
+    ports:
+    - "5000:5000"
 
-    docker-service:
-      image: verb/socat:alpine
-      container_name: docker-service
-      restart: unless-stopped
-      command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
-      ports:
-      - "2375:2375" # Serve Docker requests externaly
-      volumes:
-      - /var/run/docker.sock:/docker.sock
+  docker-service:
+    image: verb/socat:alpine
+    container_name: docker-service
+    restart: unless-stopped
+    command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
+    ports:
+    - "2375:2375" # Serve Docker requests externaly
+    volumes:
+    - /var/run/docker.sock:/docker.sock
