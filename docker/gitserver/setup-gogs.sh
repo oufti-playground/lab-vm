@@ -48,7 +48,7 @@ do
 
   echo "== Mirroring repo ${REPO_NAME} from ${REMOTE_REPO_URL}"
 
-  # Create repo to mirro
+  # Create repo to migrate
   curl -v -X POST -s \
     -F "uid=1" \
     -F "clone_addr=${REMOTE_REPO_URL}" \
