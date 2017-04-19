@@ -16,6 +16,7 @@ Vagrant.configure("2") do |config|
 
     # Port forwarding
     override.vm.network "forwarded_port", guest: 10000, host: 10000, auto_correct: true, id: "http"
+    override.vm.network "forwarded_port", guest: 10080, host: 10080, auto_correct: true, id: "demo"
 
     # No FS share to allow any depds to the host
     config.vm.synced_folder ".", "/vagrant", disabled: true

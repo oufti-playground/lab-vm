@@ -31,7 +31,7 @@ Slave dockerAgent = new DumbSlave(
   "docker-agent",
   "Agent for Docker",
   "/home/jenkins",
-  "2",
+  "4",
   Node.Mode.NORMAL,
   "docker",
   new SSHLauncher(

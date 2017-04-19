@@ -8,6 +8,10 @@ RUN curl -L -o /tmp/docker.tgz \
   && chmod a+x /usr/bin/docker* \
   && rm -f /tmp/docker.tgz
 
+RUN git clone https://github.com/sstephenson/bats.git /tmp/bats \
+  && bash /tmp/bats/install.sh /usr/local \
+  && rm -rf /tmp/bats
+
 COPY entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["bash","entrypoint.sh"]
