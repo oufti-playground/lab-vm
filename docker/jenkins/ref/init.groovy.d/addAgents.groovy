@@ -27,9 +27,9 @@ credentials = new BasicSSHUserPrivateKey(
 
 credentials_store.addCredentials(global_domain, credentials)
 
-Slave agent = new DumbSlave(
-  "docker-node",
-  "Agent node for Docker",
+Slave dockerAgent = new DumbSlave(
+  "docker-agent",
+  "Agent for Docker",
   "/home/jenkins",
   "2",
   Node.Mode.NORMAL,
@@ -51,5 +51,33 @@ Slave agent = new DumbSlave(
   new LinkedList()
 )
 
-Jenkins.instance.addNode(agent)
+Slave mavenAgent = new DumbSlave(
+  "maven-agent",
+  "Agent for Maven",
+  "/home/jenkins",
+  "2",
+  Node.Mode.NORMAL,
+  "maven",
+  new SSHLauncher(
+    "maven-agent", // HostName
+    22,
+    'ssh-agent-key', // Credential ID
+    "", // JVM Options
+    "", // JavaPath
+    "", // Prefix Start CMD
+    "", // Suffix Start CMD
+    15, // Launch Timeout
+    3, // maxRetries
+    5, // RetryWait
+    new ManuallyTrustedKeyVerificationStrategy(false)
+  ),
+  new RetentionStrategy.Always(),
+  new LinkedList()
+)
+
+Jenkins.instance.addNode(dockerAgent)
 println("Added successfully 'docker-agent' to Jenkins")
+
+
+Jenkins.instance.addNode(mavenAgent)
+println("Added successfully 'maven-agent' to Jenkins")
