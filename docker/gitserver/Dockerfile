@@ -10,4 +10,6 @@ RUN echo 'sed "s#ROOT_URL.*=.*#ROOT_URL=${EXTERNAL_URL}#g" /etc/templates/app.in
   >> /app/gogs/docker/s6/gogs/setup \
   && bash /app/setup-gogs.sh
 
+RUN rm -rf /app/gogs/docker/s6/openssh
+
 VOLUME "/app/data"

@@ -36,7 +36,7 @@ Slave dockerAgent = new DumbSlave(
   "docker",
   new SSHLauncher(
     "docker-agent", // HostName
-    22,
+    4022,
     'ssh-agent-key', // Credential ID
     "", // JVM Options
     "", // JavaPath
@@ -60,7 +60,7 @@ Slave mavenAgent = new DumbSlave(
   "maven",
   new SSHLauncher(
     "maven-agent", // HostName
-    22,
+    5022,
     'ssh-agent-key', // Credential ID
     "", // JVM Options
     "", // JavaPath
