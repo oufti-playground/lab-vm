@@ -14,9 +14,10 @@ services:
     - gitserver
     - jenkins
     - devbox
-    network_mode: "host"
+    ports:
+    - "10000:10000"
     extra_hosts:
-    - "devbox:${DOCKER_BRIDGE_IP}"
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - EXTERNAL_PORT=${EXTERNAL_PORT}
@@ -28,7 +29,8 @@ services:
       - FIRST_USER=butler
     container_name: gitserver
     restart: unless-stopped
-    network_mode: "host"
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
 
@@ -36,12 +38,8 @@ services:
     build: ./jenkins/
     container_name: jenkins
     restart: unless-stopped
-    network_mode: "host"
     extra_hosts:
-    - "docker-agent:${DOCKER_BRIDGE_IP}"
-    - "maven-agent:${DOCKER_BRIDGE_IP}"
-    - "moby:${DOCKER_BRIDGE_IP}"
-    - "alpine35:${DOCKER_BRIDGE_IP}"
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - JENKINS_OPTS=--prefix=/jenkins
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
@@ -56,8 +54,6 @@ services:
     - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    ports:
-    - "4022:22"
     environment:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
@@ -69,8 +65,6 @@ services:
     - maven-agent-data:/home/jenkins
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}" # For getting git repo
-    ports:
-    - "5022:22"
     environment:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
@@ -81,7 +75,7 @@ services:
     environment:
     - DOCKER_HOST=tcp://docker-service:2375
     ports:
-    - "7681:7681"
+    - "10080:8080"
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
 
