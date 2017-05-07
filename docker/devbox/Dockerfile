@@ -32,5 +32,7 @@ USER ${user}
 RUN git config --global user.email "${user}@localhost.local" \
   && git config --global user.name "${user}"
 
+ENV PS1='jenkins@devbox> '
+
 VOLUME ${user_home}
 WORKDIR ${user_home}
