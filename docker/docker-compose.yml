@@ -3,6 +3,7 @@ version: '2.1'
 volumes:
   docker-agent-data:
   maven-agent-data:
+  jenkins-data:
 
 services:
 
@@ -14,6 +15,11 @@ services:
     - gitserver
     - jenkins
     - devbox
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,size=10m
+    - /var/cache/nginx:rw,noexec,size=10m
+    - /var/run:rw,noexec,size=100k
     ports:
     - "10000:10000"
     extra_hosts:
@@ -40,6 +46,13 @@ services:
     restart: unless-stopped
     environment:
     - JAVA_OPTS=-Xms1024m -Xmx1024m -Djenkins.install.runSetupWizard=false
+    read_only: true
+    volumes:
+    - jenkins-data:/var/jenkins_home
+    tmpfs:
+    - /tmp:rw,exec,size=10m
+    - /var/jenkins_home/war:rw,exec,size=100m
+    - /var/jenkins_home/plugins:rw,exec,size=250m
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
@@ -52,21 +65,29 @@ services:
     build: ./docker-agent/
     container_name: docker-agent
     restart: unless-stopped
+    read_only: true
     volumes:
     - docker-agent-data:/home/jenkins
-    - /var/run/docker.sock:/var/run/docker.sock
+    - /etc/ssh
+    tmpfs:
+    - /tmp:rw,exec,size=10m
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
+    - DOCKER_HOST=tcp://docker-service:2375
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   maven-agent:
     build: ./maven-agent/
     container_name: maven-agent
     restart: unless-stopped
+    read_only: true
     volumes:
     - maven-agent-data:/home/jenkins
+    - /etc/ssh
+    tmpfs:
+    - /tmp:rw,exec,size=10m
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
@@ -77,6 +98,9 @@ services:
     build: ./devbox/
     restart: unless-stopped
     container_name: devbox
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,size=10m
     environment:
     - DOCKER_HOST=tcp://docker-service:2375
     ports:
@@ -89,6 +113,7 @@ services:
     image: registry:2
     container_name: registry
     restart: unless-stopped
+    read_only: true
     ports:
     - "5000:5000"
 
@@ -96,6 +121,7 @@ services:
     image: verb/socat:alpine
     container_name: docker-service
     restart: unless-stopped
+    read_only: true
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     ports:
     - "2375:2375" # Serve Docker requests externaly
