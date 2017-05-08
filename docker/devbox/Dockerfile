@@ -17,7 +17,7 @@ RUN apk add --update --no-cache \
     docker-bash-completion \
     git \
     maven \
-    openjdk8\
+    openjdk8 \
   && addgroup -g ${gid} ${group} \
   && adduser \
     -h "${user_home}" \
