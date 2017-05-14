@@ -27,6 +27,11 @@ RUN apk add --update --no-cache \
     -D "${user}" \
   && echo "${user}:${user}" | chpasswd
 
+# Tune the TTYD terminal Windows to avoid loosing last line when scrolling
+RUN curl -L -o /index.html \
+    https://raw.githubusercontent.com/tsl0922/ttyd/master/src/index.html \
+  && sed -i 's/height:100%;/height:98%;/g' /index.html
+
 USER ${user}
 
 RUN git config --global user.email "${user}@localhost.local" \
@@ -36,3 +41,5 @@ ENV PS1='jenkins@devbox> '
 
 VOLUME ${user_home}
 WORKDIR ${user_home}
+
+CMD ["-I","/index.html","bash"]

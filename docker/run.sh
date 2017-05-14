@@ -4,7 +4,7 @@
 # for https://github.com/dduportal/alpine2docker
 # It will print the date to a file inside the VM root home
 
-set -eux
+set -eux -o pipefail
 
 MY_BASE_DIR="$(pwd -P)"
 

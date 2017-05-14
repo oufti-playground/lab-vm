@@ -44,8 +44,6 @@ services:
     build: ./jenkins/
     container_name: jenkins
     restart: unless-stopped
-    environment:
-    - JAVA_OPTS=-Xms1024m -Xmx1024m -Djenkins.install.runSetupWizard=false
     read_only: true
     volumes:
     - jenkins-data:/var/jenkins_home
@@ -58,6 +56,7 @@ services:
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - JENKINS_OPTS=--prefix=/jenkins
+    - JAVA_OPTS=-Xms1024m -Xmx1024m -Djenkins.install.runSetupWizard=false
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - EXTERNAL_PORT=${EXTERNAL_PORT}
 
