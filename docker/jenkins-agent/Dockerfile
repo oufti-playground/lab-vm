@@ -1,14 +1,6 @@
-FROM dduportal/jenkins-ssh-agent:alpine
+FROM dduportal/jenkins-ssh-agent:docker-alpine
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-
-RUN apk add --no-cache \
-    curl \
-    docker \
-    git \
-    maven \
-    tini \
+RUN apk add --no-cache maven \
   && git clone https://github.com/sstephenson/bats.git /tmp/bats \
   && bash /tmp/bats/install.sh /usr/local \
-  && rm -rf /tmp/bats \
-  && chmod a+x /usr/local/bin/entrypoint.sh
+  && rm -rf /tmp/bats

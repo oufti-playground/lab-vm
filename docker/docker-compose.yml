@@ -17,7 +17,7 @@ services:
     - devbox
     read_only: true
     tmpfs:
-    - /tmp:rw,noexec,size=10m
+    - /tmp:rw,exec,size=10m
     - /var/cache/nginx:rw,noexec,size=10m
     - /var/run:rw,noexec,size=100k
     ports:
@@ -47,8 +47,8 @@ services:
     read_only: true
     volumes:
     - jenkins-data:/var/jenkins_home
+    - /tmp
     tmpfs:
-    - /tmp:rw,exec,size=10m
     - /var/jenkins_home/war:rw,exec,size=100m
     - /var/jenkins_home/plugins:rw,exec,size=250m
     extra_hosts:
@@ -64,14 +64,12 @@ services:
     build: ./jenkins-agent/
     container_name: docker-agent
     restart: unless-stopped
-    entrypoint: /sbin/tini -- /usr/local/bin/entrypoint.sh
     read_only: true
     volumes:
     - docker-agent-data:/home/jenkins
     - /var/run/docker.sock:/var/run/docker.sock
     - /etc
-    tmpfs:
-    - /tmp:rw,exec,size=10m
+    - /tmp
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
@@ -85,9 +83,8 @@ services:
     read_only: true
     volumes:
     - maven-agent-data:/home/jenkins
-    - /etc/ssh
-    tmpfs:
-    - /tmp:rw,exec,size=10m
+    - /etc
+    - /tmp
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
