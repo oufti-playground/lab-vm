@@ -1,0 +1,38 @@
+version: '3'
+
+networks:
+  default:
+    driver: local
+
+services:
+  front:
+    restart_policy: unless-stopped
+    read_only: true
+
+  gitserver:
+    restart_policy: unless-stopped
+    read_only: true
+
+  jenkins:
+    restart_policy: unless-stopped
+    read_only: true
+
+  docker-agent:
+    restart_policy: unless-stopped
+    read_only: true
+
+  maven-agent:
+    restart_policy: unless-stopped
+    read_only: true
+
+  devbox:
+    restart_policy: unless-stopped
+    read_only: true
+
+  registry:
+    restart_policy: unless-stopped
+    read_only: true
+
+  docker-service:
+    restart_policy: unless-stopped
+    read_only: true

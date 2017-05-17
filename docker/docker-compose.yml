@@ -1,70 +1,133 @@
-version: '2.1'
+version: '3'
 
+networks:
+  default:
+    driver: overlay
+
+# TMPFS Volumes from https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options
 volumes:
-  docker-agent-data:
-  maven-agent-data:
+  nginx-tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=10m
+  nginx-cache:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=10m
+  nginx-run:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=100k
   jenkins-data:
+    driver: local
+  jenkins-tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,exec,size=110m
+  jenkins-war:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=100m
+  jenkins-plugins:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=250m
+  devbox-tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=10m
+  docker-agent-data:
+    driver: local
+  maven-agent-data:
+    driver: local
 
 services:
 
   front:
     build: ./front/
-    container_name: front
-    restart: unless-stopped
+    image: front
     depends_on:
-    - gitserver
     - jenkins
+    - gitserver
     - devbox
-    read_only: true
-    tmpfs:
-    - /tmp:rw,exec,size=10m
-    - /var/cache/nginx:rw,noexec,size=10m
-    - /var/run:rw,noexec,size=100k
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+      placement:
+        constraints:
+          - node.hostname == worker2
+    volumes:
+    - nginx-tmp:/tmp
+    - nginx-cache:/var/cache/nginx
+    - nginx-run:/var/run
     ports:
     - "10000:10000"
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    environment:
-    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
-    - EXTERNAL_PORT=${EXTERNAL_PORT}
+    env_file: .env
 
   gitserver:
     build:
       context: ./gitserver/
       args:
       - FIRST_USER=butler
-    container_name: gitserver
-    restart: unless-stopped
+    image: gitserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    env_file: .env
     environment:
     - EXTERNAL_URL=http://git.${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
 
   jenkins:
     build: ./jenkins/
-    container_name: jenkins
-    restart: unless-stopped
-    read_only: true
+    image: jenkins
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
     volumes:
     - jenkins-data:/var/jenkins_home
-    - /tmp
-    tmpfs:
-    - /var/jenkins_home/war:rw,exec,size=100m
-    - /var/jenkins_home/plugins:rw,exec,size=250m
+    - jenkins-tmp:/tmp
+    - jenkins-war:/var/jenkins_home/war
+    - jenkins-plugins:/var/jenkins_home/plugins
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - JENKINS_OPTS=--prefix=/jenkins
     - JAVA_OPTS=-Xms1024m -Xmx1024m -Djenkins.install.runSetupWizard=false
-    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
-    - EXTERNAL_PORT=${EXTERNAL_PORT}
+    env_file: .env
 
   docker-agent:
     build: ./jenkins-agent/
-    container_name: docker-agent
-    restart: unless-stopped
-    read_only: true
+    image: docker-agent
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
     volumes:
     - docker-agent-data:/home/jenkins
     - /var/run/docker.sock:/var/run/docker.sock
@@ -78,13 +141,17 @@ services:
 
   maven-agent:
     build: ./jenkins-agent/
-    container_name: maven-agent
-    restart: unless-stopped
-    read_only: true
+    image: maven-agent
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
     volumes:
     - maven-agent-data:/home/jenkins
     - /etc
-    - /tmp
+    tmpfs:
+    - /tmp:rw,exec,size=10m
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
@@ -93,11 +160,17 @@ services:
 
   devbox:
     build: ./devbox/
-    restart: unless-stopped
-    container_name: devbox
-    read_only: true
-    tmpfs:
-    - /tmp:rw,noexec,size=10m
+    image: devbox
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+      placement:
+        constraints:
+          - node.hostname == worker2
+    volumes:
+    - devbox-tmp:/tmp
     environment:
     - DOCKER_HOST=tcp://docker-service:2375
     ports:
@@ -108,17 +181,21 @@ services:
 
   registry:
     image: registry:2
-    container_name: registry
-    restart: unless-stopped
-    read_only: true
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
     ports:
     - "5000:5000"
 
   docker-service:
     image: verb/socat:alpine
-    container_name: docker-service
-    restart: unless-stopped
-    read_only: true
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     ports:
     - "2375:2375"
