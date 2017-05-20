@@ -8,28 +8,19 @@ services:
   front:
     restart: unless-stopped
     build: ./front/
-    container_name: front
     read_only: true
-    environment:
-    - EXTERNAL_DOMAIN=localhost
 
   gitserver:
     restart: unless-stopped
-    container_name: gitserver
     build:
       context: ./gitserver/
       args:
       - FIRST_USER=butler
-    environment:
-    - EXTERNAL_DOMAIN=localhost
-    - EXTERNAL_URL=http://git.localhost:${EXTERNAL_PORT}/gitserver
 
   jenkins:
     restart: unless-stopped
     build: ./jenkins/
     read_only: true
-    environment:
-    - EXTERNAL_DOMAIN=localhost
 
   docker-agent:
     restart: unless-stopped
