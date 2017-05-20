@@ -26,12 +26,6 @@ volumes:
       o: rw,noexec,size=100k
   jenkins-data:
     driver: local
-  jenkins-tmp:
-    driver: local
-    driver_opts:
-      type: tmpfs
-      device: tmpfs
-      o: rw,exec,size=110m
   jenkins-war:
     driver: local
     driver_opts:
@@ -109,7 +103,7 @@ services:
         window: 2s
     volumes:
     - jenkins-data:/var/jenkins_home
-    - jenkins-tmp:/tmp
+    - /tmp
     - jenkins-war:/var/jenkins_home/war
     - jenkins-plugins:/var/jenkins_home/plugins
     extra_hosts:
@@ -150,8 +144,7 @@ services:
     volumes:
     - maven-agent-data:/home/jenkins
     - /etc
-    tmpfs:
-    - /tmp:rw,exec,size=10m
+    - /tmp
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"

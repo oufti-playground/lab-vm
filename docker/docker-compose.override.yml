@@ -2,37 +2,45 @@ version: '3'
 
 networks:
   default:
-    driver: local
+    driver: bridge
 
 services:
   front:
-    restart_policy: unless-stopped
+    restart: on-failure
+    container_name: front
     read_only: true
+    environment:
+    - EXTERNAL_DOMAIN=localhost
 
   gitserver:
-    restart_policy: unless-stopped
-    read_only: true
+    restart: on-failure
+    container_name: gitserver
+    environment:
+    - EXTERNAL_DOMAIN=localhost
+    - EXTERNAL_URL=http://git.localhost:${EXTERNAL_PORT}/gitserver
 
   jenkins:
-    restart_policy: unless-stopped
+    restart: on-failure
     read_only: true
+    environment:
+    - EXTERNAL_DOMAIN=localhost
 
   docker-agent:
-    restart_policy: unless-stopped
+    restart: on-failure
     read_only: true
 
   maven-agent:
-    restart_policy: unless-stopped
+    restart: on-failure
     read_only: true
 
   devbox:
-    restart_policy: unless-stopped
+    restart: on-failure
     read_only: true
 
   registry:
-    restart_policy: unless-stopped
+    restart: on-failure
     read_only: true
 
   docker-service:
-    restart_policy: unless-stopped
+    restart: on-failure
     read_only: true
