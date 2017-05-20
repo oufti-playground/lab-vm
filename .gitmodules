@@ -1,3 +1,0 @@
-[submodule "alpine2docker"]
-	path = alpine2docker
-	url = git@github.com:dduportal/alpine2docker.git
