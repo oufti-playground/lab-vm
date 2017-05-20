@@ -6,41 +6,50 @@ networks:
 
 services:
   front:
-    restart: on-failure
+    restart: unless-stopped
+    build: ./front/
     container_name: front
     read_only: true
     environment:
     - EXTERNAL_DOMAIN=localhost
 
   gitserver:
-    restart: on-failure
+    restart: unless-stopped
     container_name: gitserver
+    build:
+      context: ./gitserver/
+      args:
+      - FIRST_USER=butler
     environment:
     - EXTERNAL_DOMAIN=localhost
     - EXTERNAL_URL=http://git.localhost:${EXTERNAL_PORT}/gitserver
 
   jenkins:
-    restart: on-failure
+    restart: unless-stopped
+    build: ./jenkins/
     read_only: true
     environment:
     - EXTERNAL_DOMAIN=localhost
 
   docker-agent:
-    restart: on-failure
+    restart: unless-stopped
+    build: ./jenkins-agent/
     read_only: true
 
   maven-agent:
-    restart: on-failure
+    restart: unless-stopped
+    build: ./jenkins-agent/
     read_only: true
 
   devbox:
-    restart: on-failure
+    restart: unless-stopped
+    build: ./devbox/
     read_only: true
 
   registry:
-    restart: on-failure
+    restart: unless-stopped
     read_only: true
 
   docker-service:
-    restart: on-failure
+    restart: unless-stopped
     read_only: true

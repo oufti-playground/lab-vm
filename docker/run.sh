@@ -13,8 +13,4 @@ cd "${MY_BASE_DIR}"
 ls -altrh
 
 # Prepare volumes
-docker-compose pull
-docker-compose build
-docker-compose up -d
-
-# Pre-Load Docker images in the local registry
+docker-compose up --build -d
