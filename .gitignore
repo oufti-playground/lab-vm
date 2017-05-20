@@ -4,3 +4,4 @@
 output*
 packer_cache
 tmp-lab
+alpine2docker/customize/**
