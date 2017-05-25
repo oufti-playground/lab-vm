@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
     build: ./front/
     read_only: true
+    ports:
+    - "10000:10000"
 
   gitserver:
     restart: unless-stopped

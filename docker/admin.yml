@@ -1,0 +1,36 @@
+version: '3'
+
+networks:
+  default:
+    driver: overlay
+
+services:
+  registry:
+    image: registry:2
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    ports:
+    - "5001:5000"
+
+  lb:
+    image: traefik
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    command: --docker --docker.swarmmode --docker.domain=oufti --docker.watch --web
+    volumes:
+    - "/var/run/docker.sock:/var/run/docker.sock"
+    ports:
+    - "10000:80"
+    - "8080:8080"
