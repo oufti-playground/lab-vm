@@ -28,9 +28,27 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
-    command: --docker --docker.swarmmode --docker.domain=oufti --docker.watch --web
+    command: --docker --docker.swarmmode --docker.domain=${EXTERNAL_DOMAIN} --docker.watch --web
     volumes:
     - "/var/run/docker.sock:/var/run/docker.sock"
     ports:
     - "10000:80"
+    - "8081:8080"
+
+  visualizer:
+    image: dockersamples/visualizer
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    ports:
     - "8080:8080"
+    environment:
+    - HOST=${EXTERNAL_DOMAIN}
+    - PORT=8080
+    volumes:
+    - "/var/run/docker.sock:/var/run/docker.sock"
