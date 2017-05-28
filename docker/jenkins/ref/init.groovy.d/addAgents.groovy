@@ -45,7 +45,7 @@ Slave dockerAgent = new DumbSlave(
     15, // Launch Timeout
     3, // maxRetries
     5, // RetryWait
-    new ManuallyTrustedKeyVerificationStrategy(false)
+    new NonVerifyingKeyVerificationStrategy()
   ),
   new RetentionStrategy.Always(),
   new LinkedList()
@@ -69,7 +69,7 @@ Slave mavenAgent = new DumbSlave(
     15, // Launch Timeout
     3, // maxRetries
     5, // RetryWait
-    new ManuallyTrustedKeyVerificationStrategy(false)
+    new NonVerifyingKeyVerificationStrategy()
   ),
   new RetentionStrategy.Always(),
   new LinkedList()
