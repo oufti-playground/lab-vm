@@ -52,18 +52,23 @@ volumes:
 
 services:
   front:
-    image: 192.168.99.100:5001/front
+    image: ${REGISTRY_URL}/front
     depends_on:
     - jenkins
     - gitserver
     - devbox
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        # - node.hostname == prod-w1
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 2s
       labels:
       - "traefik.port=10000"
+      - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
     expose:
     - "10000"
     volumes:
@@ -73,10 +78,15 @@ services:
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     env_file: .env
+    environment:
+    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
 
   gitserver:
-    image: 192.168.99.100:5001/gitserver
+    image: ${REGISTRY_URL}/gitserver
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -85,11 +95,15 @@ services:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     env_file: .env
     environment:
-    - EXTERNAL_URL=http://git.${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
+    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+    - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
 
   jenkins:
-    image: 192.168.99.100:5001/jenkins
+    image: ${REGISTRY_URL}/jenkins
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -101,15 +115,18 @@ services:
     - jenkins-plugins:/var/jenkins_home/plugins
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
+    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - JENKINS_OPTS=--prefix=/jenkins
-    - JAVA_OPTS=-Xms1024m -Xmx1024m -Djenkins.install.runSetupWizard=false
+    - JAVA_OPTS=-Xms512m -Xmx512m -Djenkins.install.runSetupWizard=false
     env_file: .env
 
   docker-agent:
-    image: 192.168.99.100:5001/docker-agent
+    image: ${REGISTRY_URL}/docker-agent
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -121,13 +138,15 @@ services:
     - /tmp
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   maven-agent:
-    image: 192.168.99.100:5001/maven-agent
+    image: ${REGISTRY_URL}/maven-agent
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -138,13 +157,17 @@ services:
     - /tmp
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   devbox:
-    image: 192.168.99.100:5001/devbox
+    image: ${REGISTRY_URL}/devbox
+    command: ["--index","/index.html","bash"]
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        # - node.hostname == prod-w1
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -153,31 +176,36 @@ services:
     - devbox-tmp:/tmp
     environment:
     - DOCKER_HOST=tcp://docker-service:2375
-    ports:
-    - "10080:8080"
+    # ports:
+    # - "10080:8080"
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
 
   registry:
     image: registry:2
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 2s
-    ports:
-    - "5000:5000"
+    # ports:
+    # - "5000:5000"
 
   docker-service:
     image: verb/socat:alpine
     deploy:
+      placement:
+        constraints:
+        - node.role != manager
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 2s
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     ports:
-    - "2375:2375"
+    - "2375"
     volumes:
     - /var/run/docker.sock:/docker.sock
