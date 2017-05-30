@@ -1,7 +1,9 @@
 version: '3'
 
 networks:
-  default:
+  admin:
+    driver: overlay
+  front:
     driver: overlay
 
 services:
@@ -15,6 +17,8 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+    networks:
+    - front
     ports:
     - "5001:5000"
 
@@ -28,6 +32,8 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+    networks:
+    - front
     command: --docker --docker.swarmmode --docker.domain=${EXTERNAL_DOMAIN} --docker.watch --web
     volumes:
     - "/var/run/docker.sock:/var/run/docker.sock"
@@ -45,6 +51,8 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+    networks:
+    - admin
     ports:
     - "8080:8080"
     environment:
