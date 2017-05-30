@@ -2,8 +2,11 @@ version: '3'
 
 networks:
   default:
+    driver:
+      overlay
+  front:
     external:
-      name: admin_default
+      name: admin_front
 
 # TMPFS Volumes from https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options
 volumes:
@@ -69,8 +72,12 @@ services:
       labels:
       - "traefik.port=10000"
       - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
-    expose:
-    - "10000"
+      resources:
+        limits:
+          memory: 64M
+    networks:
+    - default
+    - front
     volumes:
     - nginx-tmp:/tmp
     - nginx-cache:/var/cache/nginx
@@ -91,6 +98,9 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+      resources:
+        limits:
+          memory: 128M
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     env_file: .env
@@ -108,6 +118,9 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+      resources:
+        limits:
+          memory: 1024M
     volumes:
     - jenkins-data:/var/jenkins_home
     - /tmp
@@ -131,6 +144,9 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+      resources:
+        limits:
+          memory: 256M
     volumes:
     - docker-agent-data:/home/jenkins
     - /var/run/docker.sock:/var/run/docker.sock
@@ -151,6 +167,9 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+      resources:
+        limits:
+          memory: 1024M
     volumes:
     - maven-agent-data:/home/jenkins
     - /etc
@@ -162,22 +181,21 @@ services:
 
   devbox:
     image: ${REGISTRY_URL}/devbox
-    command: ["--index","/index.html","bash"]
     deploy:
       placement:
         constraints:
         - node.role != manager
-        # - node.hostname == prod-w1
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 2s
+      resources:
+        limits:
+          memory: 1024M
     volumes:
     - devbox-tmp:/tmp
     environment:
     - DOCKER_HOST=tcp://docker-service:2375
-    # ports:
-    # - "10080:8080"
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
 
@@ -191,8 +209,9 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
-    # ports:
-    # - "5000:5000"
+      resources:
+        limits:
+          memory: 50M
 
   docker-service:
     image: verb/socat:alpine
@@ -205,7 +224,5 @@ services:
         max_attempts: 3
         window: 2s
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
-    ports:
-    - "2375"
     volumes:
     - /var/run/docker.sock:/docker.sock

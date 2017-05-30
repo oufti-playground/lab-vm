@@ -2,7 +2,11 @@ version: '3'
 
 networks:
   default:
-    driver: bridge
+    driver:
+      bridge
+  front:
+    driver:
+      bridge
 
 services:
   front:
@@ -38,10 +42,14 @@ services:
     restart: unless-stopped
     build: ./devbox/
     read_only: true
+    ports:
+    - "10080:8080"
 
   registry:
     restart: unless-stopped
     read_only: true
+    ports:
+    - "5000:5000"
 
   docker-service:
     restart: unless-stopped
