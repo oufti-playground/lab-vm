@@ -64,7 +64,6 @@ services:
       placement:
         constraints:
         - node.role != manager
-        # - node.hostname == prod-w1
       restart_policy:
         condition: on-failure
         max_attempts: 3
