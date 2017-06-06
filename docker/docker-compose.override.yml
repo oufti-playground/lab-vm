@@ -46,6 +46,7 @@ services:
     - "10080:8080"
 
   registry:
+    image: registry:2
     restart: unless-stopped
     read_only: true
     ports:
