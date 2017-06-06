@@ -68,9 +68,10 @@ services:
       placement:
         constraints:
         - node.role != manager
+        - engine.labels.family == app
       restart_policy:
         condition: on-failure
-        max_attempts: 3
+        max_attempts: 10
         window: 2s
       labels:
       - "traefik.port=10000"
@@ -102,6 +103,7 @@ services:
       placement:
         constraints:
         - node.role != manager
+        - engine.labels.family == app
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -126,6 +128,7 @@ services:
       placement:
         constraints:
         - node.role != manager
+        - engine.labels.family == app
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -133,7 +136,7 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 1024M
+          memory: 1536M
         reservations:
           cpus: '0.50'
           memory: 1024M
@@ -156,6 +159,7 @@ services:
       placement:
         constraints:
         - node.role != manager
+        - engine.labels.family == app
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -163,10 +167,10 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 256M
+          memory: 1024M
         reservations:
           cpus: '0.50'
-          memory: 256M
+          memory: 512M
     volumes:
     - docker-agent-data:/home/jenkins
     - /var/run/docker.sock:/var/run/docker.sock
@@ -183,6 +187,7 @@ services:
       placement:
         constraints:
         - node.role != manager
+        - engine.labels.family == app
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -209,6 +214,7 @@ services:
       placement:
         constraints:
         - node.role != manager
+        - engine.labels.family == app
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -227,30 +233,13 @@ services:
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
 
-  registry:
-    image: registry:2
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 128M
-        reservations:
-          cpus: '0.50'
-          memory: 128M
-
   docker-service:
     image: verb/socat:alpine
     deploy:
       placement:
         constraints:
         - node.role != manager
+        - engine.labels.family == app
       restart_policy:
         condition: on-failure
         max_attempts: 3
