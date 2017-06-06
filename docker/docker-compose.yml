@@ -60,6 +60,10 @@ services:
     - jenkins
     - gitserver
     - devbox
+    labels:
+    - "traefik.port=10000"
+    - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
+    - "traefik.docker.network=admin_front"
     deploy:
       placement:
         constraints:
@@ -71,9 +75,14 @@ services:
       labels:
       - "traefik.port=10000"
       - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
+      - "traefik.docker.network=admin_front"
       resources:
         limits:
-          memory: 64M
+          cpus: '0.50'
+          memory: 128M
+        reservations:
+          cpus: '0.50'
+          memory: 128M
     networks:
     - default
     - front
@@ -99,7 +108,11 @@ services:
         window: 2s
       resources:
         limits:
-          memory: 128M
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.50'
+          memory: 256M
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     env_file: .env
@@ -119,6 +132,10 @@ services:
         window: 2s
       resources:
         limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.50'
           memory: 1024M
     volumes:
     - jenkins-data:/var/jenkins_home
@@ -130,7 +147,7 @@ services:
     environment:
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - JENKINS_OPTS=--prefix=/jenkins
-    - JAVA_OPTS=-Xms512m -Xmx512m -Djenkins.install.runSetupWizard=false
+    - JAVA_OPTS=-Xms512m -Xmx512m -Djenkins.install.runSetupWizard=false -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 -XshowSettings:vm
     env_file: .env
 
   docker-agent:
@@ -145,6 +162,10 @@ services:
         window: 2s
       resources:
         limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.50'
           memory: 256M
     volumes:
     - docker-agent-data:/home/jenkins
@@ -168,7 +189,11 @@ services:
         window: 2s
       resources:
         limits:
+          cpus: '0.50'
           memory: 1024M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
     volumes:
     - maven-agent-data:/home/jenkins
     - /etc
@@ -190,7 +215,11 @@ services:
         window: 2s
       resources:
         limits:
+          cpus: '0.50'
           memory: 1024M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
     volumes:
     - devbox-tmp:/tmp
     environment:
@@ -210,7 +239,11 @@ services:
         window: 2s
       resources:
         limits:
-          memory: 50M
+          cpus: '0.50'
+          memory: 128M
+        reservations:
+          cpus: '0.50'
+          memory: 128M
 
   docker-service:
     image: verb/socat:alpine

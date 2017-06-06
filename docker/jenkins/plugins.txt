@@ -31,7 +31,7 @@ docker-workflow:1.11
 durable-task:1.13
 email-ext:2.57.2
 external-monitor-job:1.7
-favorite:2.1.0
+favorite:2.2.0
 git-client:2.4.6
 git-server:1.7
 git:3.3.0
