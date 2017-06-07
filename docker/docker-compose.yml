@@ -96,6 +96,8 @@ services:
     env_file: .env
     environment:
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+    - REGISTRY_URL=${REGISTRY_URL}
+    - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
 
   gitserver:
     image: ${REGISTRY_URL}/gitserver
