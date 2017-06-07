@@ -66,6 +66,22 @@ services:
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
 
+  slides-server:
+    image: ${REGISTRY_URL}/slides-server
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    networks:
+    - front
+    expose:
+    - "80"
+
 ### Monitoring Stack
   cadvisor:
     image: google/cadvisor:${CADVISOR_VERSION:-v0.25.0}

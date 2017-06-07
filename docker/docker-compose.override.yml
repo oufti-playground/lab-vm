@@ -55,3 +55,17 @@ services:
   docker-service:
     restart: unless-stopped
     read_only: true
+
+  slides-server:
+    image: ${REGISTRY_URL}/slides-server
+    build: ./slides-server/
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+    - /var/run:rw,noexec,size=10k
+    - /var/cache/nginx:rw,noexec,size=10m
+    - /tmp:rw,noexec,size=1m
+    networks:
+    - front
+    expose:
+    - "80"
