@@ -156,10 +156,10 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 1024M
+          memory: 2048M
         reservations:
           cpus: '0.50'
-          memory: 128M
+          memory: 512M
 
   grafana:
     image: basi/grafana:${GRAFANA_VERSION:-v4.1.1}
@@ -247,7 +247,7 @@ services:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx4096m"
     ulimits:
       memlock:
         soft: -1
@@ -267,10 +267,10 @@ services:
       resources:
         limits:
           cpus: '2'
-          memory: 640M
+          memory: 16384M
         reservations:
           cpus: '0.5'
-          memory: 512M
+          memory: 4096M
 
   kibana:
     image: kibana:4
