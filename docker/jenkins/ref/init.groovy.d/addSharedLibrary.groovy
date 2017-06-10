@@ -7,7 +7,7 @@ GlobalLibraries globalLibs = GlobalConfiguration.all().get(GlobalLibraries.class
 
 SCMSource scm = new jenkins.plugins.git.GitSCMSource(
   "",
-  "https://github.com/oufti-playground/example-voting-app",
+  "https://github.com/oufti-playground/pipeline-libraries",
   "",
   "",
   "",

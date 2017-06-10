@@ -1,70 +1,178 @@
-version: '2.1'
+version: '3'
 
+networks:
+  default:
+    driver:
+      overlay
+  front:
+    external:
+      name: admin_front
+
+# TMPFS Volumes from https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options
 volumes:
-  docker-agent-data:
-  maven-agent-data:
+  nginx-tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=10m
+  nginx-cache:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=10m
+  nginx-run:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=100k
   jenkins-data:
+    driver: local
+  jenkins-war:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=100m
+  jenkins-plugins:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=250m
+  devbox-tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: rw,noexec,size=10m
+  docker-agent-data:
+    driver: local
+  maven-agent-data:
+    driver: local
 
 services:
-
   front:
-    build: ./front/
-    container_name: front
-    restart: unless-stopped
+    image: ${REGISTRY_URL}/front
     depends_on:
-    - gitserver
     - jenkins
+    - gitserver
     - devbox
-    read_only: true
-    tmpfs:
-    - /tmp:rw,exec,size=10m
-    - /var/cache/nginx:rw,noexec,size=10m
-    - /var/run:rw,noexec,size=100k
-    ports:
-    - "10000:10000"
+    labels:
+    - "traefik.port=10000"
+    - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
+    - "traefik.docker.network=admin_front"
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == app
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        window: 2s
+      labels:
+      - "traefik.port=10000"
+      - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
+      - "traefik.docker.network=admin_front"
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 128M
+        reservations:
+          cpus: '0.50'
+          memory: 128M
+    networks:
+    - default
+    - front
+    volumes:
+    - nginx-tmp:/tmp
+    - nginx-cache:/var/cache/nginx
+    - nginx-run:/var/run
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    env_file: .env
     environment:
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
-    - EXTERNAL_PORT=${EXTERNAL_PORT}
+    - REGISTRY_URL=${REGISTRY_URL}
+    - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
 
   gitserver:
-    build:
-      context: ./gitserver/
-      args:
-      - FIRST_USER=butler
-    container_name: gitserver
-    restart: unless-stopped
+    image: ${REGISTRY_URL}/gitserver
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == app
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.50'
+          memory: 256M
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    env_file: .env
     environment:
-    - EXTERNAL_URL=http://git.${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
+    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+    - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
 
   jenkins:
-    build: ./jenkins/
-    container_name: jenkins
-    restart: unless-stopped
-    read_only: true
+    image: ${REGISTRY_URL}/jenkins
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == app
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1536M
+        reservations:
+          cpus: '0.50'
+          memory: 1024M
     volumes:
     - jenkins-data:/var/jenkins_home
     - /tmp
-    tmpfs:
-    - /var/jenkins_home/war:rw,exec,size=100m
-    - /var/jenkins_home/plugins:rw,exec,size=250m
+    - jenkins-war:/var/jenkins_home/war
+    - jenkins-plugins:/var/jenkins_home/plugins
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
-    - JENKINS_OPTS=--prefix=/jenkins
-    - JAVA_OPTS=-Xms1024m -Xmx1024m -Djenkins.install.runSetupWizard=false
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
-    - EXTERNAL_PORT=${EXTERNAL_PORT}
+    - JENKINS_OPTS=--prefix=/jenkins
+    - JAVA_OPTS=-Xms512m -Xmx512m -Djenkins.install.runSetupWizard=false -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 -XshowSettings:vm
+    env_file: .env
 
   docker-agent:
-    build: ./jenkins-agent/
-    container_name: docker-agent
-    restart: unless-stopped
-    read_only: true
+    image: ${REGISTRY_URL}/docker-agent
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == app
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
     volumes:
     - docker-agent-data:/home/jenkins
     - /var/run/docker.sock:/var/run/docker.sock
@@ -72,55 +180,72 @@ services:
     - /tmp
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   maven-agent:
-    build: ./jenkins-agent/
-    container_name: maven-agent
-    restart: unless-stopped
-    read_only: true
+    image: ${REGISTRY_URL}/maven-agent
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == app
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
     volumes:
     - maven-agent-data:/home/jenkins
     - /etc
     - /tmp
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   devbox:
-    build: ./devbox/
-    restart: unless-stopped
-    container_name: devbox
-    read_only: true
-    tmpfs:
-    - /tmp:rw,noexec,size=10m
+    image: ${REGISTRY_URL}/devbox
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == app
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
+    volumes:
+    - devbox-tmp:/tmp
     environment:
     - DOCKER_HOST=tcp://docker-service:2375
-    ports:
-    - "10080:8080"
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    - "git.${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-
-  registry:
-    image: registry:2
-    container_name: registry
-    restart: unless-stopped
-    read_only: true
-    ports:
-    - "5000:5000"
 
   docker-service:
     image: verb/socat:alpine
-    container_name: docker-service
-    restart: unless-stopped
-    read_only: true
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == app
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
-    ports:
-    - "2375:2375"
     volumes:
     - /var/run/docker.sock:/docker.sock

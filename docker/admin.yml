@@ -1,0 +1,297 @@
+version: '3'
+
+networks:
+  admin:
+    driver: overlay
+  front:
+    driver: overlay
+  monitoring:
+    driver: overlay
+  logging:
+    driver: overlay
+
+services:
+  registry:
+    image: registry:2
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    networks:
+    - front
+    ports:
+    - "5001:5000"
+
+  lb:
+    image: traefik:1.3.0
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    networks:
+    - front
+    command: --docker --docker.swarmmode --docker.domain=${EXTERNAL_DOMAIN} --docker.watch --web
+    volumes:
+    - "/var/run/docker.sock:/var/run/docker.sock"
+    ports:
+    - "10000:80"
+    - "8081:8080"
+
+  visualizer:
+    image: dockersamples/visualizer
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    networks:
+    - admin
+    ports:
+    - "8080:8080"
+    environment:
+    - HOST=${EXTERNAL_DOMAIN}
+    - PORT=8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  slides-server:
+    image: ${REGISTRY_URL}/slides-server
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 2s
+    networks:
+    - front
+    expose:
+    - "80"
+
+### Monitoring Stack
+  cadvisor:
+    image: google/cadvisor:${CADVISOR_VERSION:-v0.25.0}
+    networks:
+      - monitoring
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock,readonly
+      - /:/rootfs
+      - /var/run:/var/run
+      - /sys:/sys
+      - /var/lib/docker/:/var/lib/docker
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 128M
+        reservations:
+          cpus: '0.10'
+          memory: 64M
+
+  node-exporter:
+    image: basi/node-exporter:${NODE_EXPORTER_VERSION:-v1.13.0}
+    networks:
+      - monitoring
+    volumes:
+      - /proc:/host/proc
+      - /sys:/host/sys
+      - /:/rootfs
+      - /etc/hostname:/etc/host_hostname
+    environment:
+      HOST_HOSTNAME: /etc/host_hostname
+    command: -collector.procfs "/host/proc" -collector.sysfs /host/sys -collector.textfile.directory /etc/node-exporter/ -collectors.enabled 'conntrack,diskstats,entropy,filefd,filesystem,loadavg,mdadm,meminfo,netdev,netstat,stat,textfile,time,vmstat,ipvs' -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($$|/)"
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 32M
+        reservations:
+          cpus: '0.10'
+          memory: 16M
+
+  docker-exporter:
+    image: basi/socat:${DOCKER_EXPORTER_VERSION:-v0.1.0}
+    networks:
+      - monitoring
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 6M
+        reservations:
+          cpus: '0.05'
+          memory: 4M
+
+  prometheus:
+    image: basi/prometheus-swarm:${PROMETHEUS_SWARM_VERSION:-v0.4.3}
+    ports:
+      - "9090"
+    networks:
+      - monitoring
+    command: -config.file=/etc/prometheus/prometheus.yml -storage.local.path=/prometheus -web.console.libraries=/etc/prometheus/console_libraries -web.console.templates=/etc/prometheus/consoles -alertmanager.url=http://alertmanager:9093
+    deploy:
+      mode: replicated
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2048M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
+
+  grafana:
+    image: basi/grafana:${GRAFANA_VERSION:-v4.1.1}
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_PASSWORD:-admin}
+      PROMETHEUS_ENDPOINT: http://prometheus:9090
+      ELASTICSEARCH_ENDPOINT: ${ES_ADDRESS:-http://elasticsearch:9200}
+      ELASTICSEARCH_USER: ${ES_USERNAME}
+      ELASTICSEARCH_PASSWORD: ${ES_PASSWORD}
+    deploy:
+      mode: replicated
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 64M
+        reservations:
+          cpus: '0.50'
+          memory: 32M
+
+### Logging stack
+  logspout:
+    image: bekt/logspout-logstash:latest
+    networks:
+      - logging
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      ROUTE_URIS: logstash://logstash:5000
+      DOCKER_LABELS: "true"
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+        reservations:
+          cpus: '0.25'
+          memory: 32M
+
+  logstash:
+    image: basi/logstash:${LOGSTASH_VERSION:-v0.8.0}
+    networks:
+      - logging
+    environment:
+      DEBUG:                  "${LOGSTASH_DEBUG:-false}"
+      LOGSPOUT:               ignore
+      ELASTICSEARCH_USER:     ${ELASTICSEARCH_LOGS_USER}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_LOGS_PASSWORD}
+      ELASTICSEARCH_SSL:      ${ELASTICSEARCH_LOGS_SSL}
+      ELASTICSEARCH_ADDR:     ${ELASTICSEARCH_LOGS_ADDR:-elasticsearch}
+      ELASTICSEARCH_PORT:     ${ELASTICSEARCH_LOGS_PORT:-9200}
+    deploy:
+      mode: replicated
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 800M
+        reservations:
+          cpus: '0.25'
+          memory: 400M
+
+  elasticsearch:
+    image: elasticsearch:2
+    ports:
+      - 9200:9200
+    networks:
+      - logging
+      - monitoring
+    environment:
+      - LOGSPOUT=ignore
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx4096m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      resources:
+        limits:
+          cpus: '2'
+          memory: 16384M
+        reservations:
+          cpus: '0.5'
+          memory: 4096M
+
+  kibana:
+    image: kibana:4
+    networks:
+      - logging
+    ports:
+      - "5601:5601"
+    environment:
+      - LOGSPOUT=ignore
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - engine.labels.family == admin
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 384M
+        reservations:
+          cpus: '0.25'
+          memory: 256M

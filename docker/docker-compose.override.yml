@@ -1,0 +1,71 @@
+version: '3'
+
+networks:
+  default:
+    driver:
+      bridge
+  front:
+    driver:
+      bridge
+
+services:
+  front:
+    restart: unless-stopped
+    build: ./front/
+    read_only: true
+    ports:
+    - "10000:10000"
+
+  gitserver:
+    restart: unless-stopped
+    build:
+      context: ./gitserver/
+      args:
+      - FIRST_USER=butler
+
+  jenkins:
+    restart: unless-stopped
+    build: ./jenkins/
+    read_only: true
+
+  docker-agent:
+    restart: unless-stopped
+    build: ./jenkins-agent/
+    read_only: true
+
+  maven-agent:
+    restart: unless-stopped
+    build: ./jenkins-agent/
+    read_only: true
+
+  devbox:
+    restart: unless-stopped
+    build: ./devbox/
+    read_only: true
+    ports:
+    - "10080:8080"
+
+  registry:
+    image: registry:2
+    restart: unless-stopped
+    read_only: true
+    ports:
+    - "5000:5000"
+
+  docker-service:
+    restart: unless-stopped
+    read_only: true
+
+  slides-server:
+    image: ${REGISTRY_URL}/slides-server
+    build: ./slides-server/
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+    - /var/run:rw,noexec,size=10k
+    - /var/cache/nginx:rw,noexec,size=10m
+    - /tmp:rw,noexec,size=1m
+    networks:
+    - front
+    expose:
+    - "80"
