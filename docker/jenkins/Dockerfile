@@ -9,3 +9,8 @@ RUN /usr/local/bin/install-plugins.sh $(cat /tmp/plugins.txt) \
   https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant
 
 COPY ./ref /usr/share/jenkins/ref
+
+ARG CUSTOM_JVM_OPTS=-XshowSettings:vm
+
+ENV CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS}
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false ${CUSTOM_JVM_OPTS}"

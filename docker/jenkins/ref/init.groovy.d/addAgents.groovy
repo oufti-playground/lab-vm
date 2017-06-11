@@ -10,6 +10,9 @@ import hudson.plugins.sshslaves.verifiers.*;
 
 global_domain = Domain.global()
 
+def env = System.getenv()
+String customJvmOpts = env['CUSTOM_JVM_OPTS']
+
 credentials_store = Jenkins.instance.getExtensionList(
   'com.cloudbees.plugins.credentials.SystemCredentialsProvider'
 )[0].getStore()
@@ -38,7 +41,7 @@ Slave dockerAgent = new DumbSlave(
     "docker-agent", // HostName
     22,
     'ssh-agent-key', // Credential ID
-    "", // JVM Options
+    customJvmOpts, // JVM Options
     "", // JavaPath
     "", // Prefix Start CMD
     "", // Suffix Start CMD
@@ -62,7 +65,7 @@ Slave mavenAgent = new DumbSlave(
     "maven-agent", // HostName
     22,
     'ssh-agent-key', // Credential ID
-    "", // JVM Options
+    customJvmOpts, // JVM Options
     "", // JavaPath
     "", // Prefix Start CMD
     "", // Suffix Start CMD

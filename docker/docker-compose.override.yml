@@ -30,17 +30,26 @@ services:
 
   docker-agent:
     restart: unless-stopped
-    build: ./jenkins-agent/
+    build:
+      context: ./jenkins-agent/
+      args:
+      - CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS}
     read_only: true
 
   maven-agent:
     restart: unless-stopped
-    build: ./jenkins-agent/
+    build:
+      context: ./jenkins-agent/
+      args:
+      - CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS}
     read_only: true
 
   devbox:
     restart: unless-stopped
-    build: ./devbox/
+    build:
+      context: ./devbox/
+      args:
+      - CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS}
     read_only: true
     ports:
     - "10080:8080"

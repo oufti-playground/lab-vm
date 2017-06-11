@@ -51,6 +51,10 @@ USER root
 COPY supervisord.conf /etc/supervisord.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 
+ARG CUSTOM_JVM_OPTS=-XshowSettings:vm
+RUN sed -i '/MAVEN_OPTS/d' /etc/mavenrc \
+  && echo 'MAVEN_OPTS="'${CUSTOM_JVM_OPTS}'"' >> /etc/mavenrc
+
 EXPOSE 80
 
 VOLUME ${user_home} /tmp /run /var/log/nginx /var/tmp/nginx

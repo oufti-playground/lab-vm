@@ -81,7 +81,7 @@ services:
         limits:
           memory: 128M
         reservations:
-          memory: 32M
+          memory: 16M
     networks:
     - default
     - front
@@ -133,9 +133,9 @@ services:
         window: 2s
       resources:
         limits:
-          memory: 1536M
+          memory: 2560M
         reservations:
-          memory: 512M
+          memory: 1536M
     volumes:
     - jenkins-data:/var/jenkins_home
     - /tmp
@@ -146,7 +146,6 @@ services:
     environment:
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - JENKINS_OPTS=--prefix=/jenkins
-    - JAVA_OPTS=-Xms256m -XX:MaxRAM=1536M -XX:MaxRAMFraction=2 -Djenkins.install.runSetupWizard=false -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XshowSettings:vm
     env_file: .env
 
   docker-agent:
@@ -162,9 +161,9 @@ services:
         window: 2s
       resources:
         limits:
-          memory: 1024M
+          memory: 512M
         reservations:
-          memory: 128M
+          memory: 256M
     volumes:
     - docker-agent-data:/home/jenkins
     - /var/run/docker.sock:/var/run/docker.sock
@@ -190,7 +189,7 @@ services:
         limits:
           memory: 1024M
         reservations:
-          memory: 128M
+          memory: 384M
     volumes:
     - maven-agent-data:/home/jenkins
     - /etc
@@ -215,7 +214,7 @@ services:
         limits:
           memory: 1024M
         reservations:
-          memory: 768M
+          memory: 384M
     volumes:
     - devbox-tmp:/tmp
     environment:
@@ -234,6 +233,11 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+      resources:
+        limits:
+          memory: 16M
+        reservations:
+          memory: 8M
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     volumes:
     - /var/run/docker.sock:/docker.sock
