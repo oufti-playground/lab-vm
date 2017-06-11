@@ -25,8 +25,11 @@ cp -r /etc/nginx-templates "${TEMPLATES_TMP_DIR}"
 
 # Copy rendered inside Nginx, overwriting existing conf
 cp -r "${TEMPLATES_TMP_DIR}"/* /etc/nginx/
-
 chmod -R 755 /etc/nginx/
+
+# Uncomment to enable DEBUG for nginx
+# sed -i 's/warn/debug/g' /etc/nginx/*.conf
+# sed -i 's/warn/debug/g' /etc/nginx/conf.d/*.conf
 
 # Run nginx
 nginx -g "daemon off;"
