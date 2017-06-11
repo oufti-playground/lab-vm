@@ -71,19 +71,17 @@ services:
         - engine.labels.family == app
       restart_policy:
         condition: on-failure
-        max_attempts: 10
-        window: 2s
+        max_attempts: 6
+        window: 5s
       labels:
       - "traefik.port=10000"
       - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
       - "traefik.docker.network=admin_front"
       resources:
         limits:
-          cpus: '0.50'
           memory: 128M
         reservations:
-          cpus: '0.50'
-          memory: 128M
+          memory: 32M
     networks:
     - default
     - front
@@ -97,7 +95,7 @@ services:
     environment:
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - REGISTRY_URL=${REGISTRY_URL}
-    - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
+    - REGISTRY_USER=${COMPOSE_PROJECT_NAME:-registry_user}
 
   gitserver:
     image: ${REGISTRY_URL}/gitserver
@@ -112,11 +110,9 @@ services:
         window: 2s
       resources:
         limits:
-          cpus: '0.50'
           memory: 256M
         reservations:
-          cpus: '0.50'
-          memory: 256M
+          memory: 64M
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     env_file: .env
@@ -137,11 +133,9 @@ services:
         window: 2s
       resources:
         limits:
-          cpus: '0.50'
           memory: 1536M
         reservations:
-          cpus: '0.50'
-          memory: 1024M
+          memory: 512M
     volumes:
     - jenkins-data:/var/jenkins_home
     - /tmp
@@ -152,7 +146,7 @@ services:
     environment:
     - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - JENKINS_OPTS=--prefix=/jenkins
-    - JAVA_OPTS=-Xms512m -Xmx512m -Djenkins.install.runSetupWizard=false -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 -XshowSettings:vm
+    - JAVA_OPTS=-Xms256m -XX:MaxRAM=1536M -XX:MaxRAMFraction=2 -Djenkins.install.runSetupWizard=false -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XshowSettings:vm
     env_file: .env
 
   docker-agent:
@@ -168,11 +162,9 @@ services:
         window: 2s
       resources:
         limits:
-          cpus: '0.50'
           memory: 1024M
         reservations:
-          cpus: '0.50'
-          memory: 512M
+          memory: 128M
     volumes:
     - docker-agent-data:/home/jenkins
     - /var/run/docker.sock:/var/run/docker.sock
@@ -196,11 +188,9 @@ services:
         window: 2s
       resources:
         limits:
-          cpus: '0.50'
           memory: 1024M
         reservations:
-          cpus: '0.50'
-          memory: 512M
+          memory: 128M
     volumes:
     - maven-agent-data:/home/jenkins
     - /etc
@@ -223,11 +213,9 @@ services:
         window: 2s
       resources:
         limits:
-          cpus: '0.50'
           memory: 1024M
         reservations:
-          cpus: '0.50'
-          memory: 512M
+          memory: 768M
     volumes:
     - devbox-tmp:/tmp
     environment:

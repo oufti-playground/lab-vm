@@ -89,7 +89,7 @@ services:
         limits:
           memory: 128M
         reservations:
-          memory: 64M
+          memory: 128M
 
   node-exporter:
     image: basi/node-exporter:${NODE_EXPORTER_VERSION:-v1.13.0}
@@ -109,7 +109,7 @@ services:
         limits:
           memory: 32M
         reservations:
-          memory: 16M
+          memory: 32M
 
   docker-exporter:
     image: basi/socat:${DOCKER_EXPORTER_VERSION:-v0.1.0}
@@ -121,7 +121,7 @@ services:
         limits:
           memory: 6M
         reservations:
-          memory: 4M
+          memory: 6M
 
   prometheus:
     image: basi/prometheus-swarm:${PROMETHEUS_SWARM_VERSION:-v0.4.3}
@@ -184,7 +184,7 @@ services:
         limits:
           memory: 64M
         reservations:
-          memory: 32M
+          memory: 64M
 
   logstash:
     image: basi/logstash:${LOGSTASH_VERSION:-v0.8.0}
@@ -223,7 +223,7 @@ services:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms2048m -XX:MaxRAM=10240M"
+      - "ES_JAVA_OPTS=-Xms512m -XX:MaxRAM=10240M"
     ulimits:
       memlock:
         soft: -1
@@ -244,7 +244,7 @@ services:
         limits:
           memory: 10240M
         reservations:
-          memory: 2048M
+          memory: 512M
 
   kibana:
     image: kibana:4
