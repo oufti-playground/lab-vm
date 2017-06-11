@@ -17,8 +17,8 @@ ADMIN_WORKER_NUM=3
 ADMIN_TYPE=i3.large
 ADMIN_SG=docker-machine
 
-APP_WORKER_NUM=1
-APP_TYPE=m4.large
+APP_WORKER_NUM=2
+APP_TYPE=m4.xlarge
 APP_SG=docker-machine
 
 SWARM_MANAGER_TOKEN=""
