@@ -10,6 +10,10 @@ networks:
   logging:
     driver: overlay
 
+volumes:
+  registry_data:
+    driver: local
+
 services:
   registry:
     image: registry:2
@@ -22,10 +26,12 @@ services:
         condition: on-failure
         max_attempts: 3
         window: 2s
+    volumes:
+    - registry_data:/var/lib/registry
     networks:
     - front
     ports:
-    - "5001:5000"
+    - "5000:5000"
 
   lb:
     image: traefik:1.3.0
@@ -66,22 +72,6 @@ services:
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
 
-  slides-server:
-    image: ${REGISTRY_URL}/slides-server
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == admin
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-    networks:
-    - front
-    expose:
-    - "80"
-
 ### Monitoring Stack
   cadvisor:
     image: google/cadvisor:${CADVISOR_VERSION:-v0.25.0}
@@ -97,10 +87,8 @@ services:
       mode: global
       resources:
         limits:
-          cpus: '0.10'
           memory: 128M
         reservations:
-          cpus: '0.10'
           memory: 64M
 
   node-exporter:
@@ -119,10 +107,8 @@ services:
       mode: global
       resources:
         limits:
-          cpus: '0.10'
           memory: 32M
         reservations:
-          cpus: '0.10'
           memory: 16M
 
   docker-exporter:
@@ -133,10 +119,8 @@ services:
       mode: global
       resources:
         limits:
-          cpus: '0.05'
           memory: 6M
         reservations:
-          cpus: '0.05'
           memory: 4M
 
   prometheus:
@@ -155,10 +139,8 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.50'
           memory: 2048M
         reservations:
-          cpus: '0.50'
           memory: 512M
 
   grafana:
@@ -182,10 +164,8 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.50'
           memory: 64M
         reservations:
-          cpus: '0.50'
           memory: 32M
 
 ### Logging stack
@@ -202,10 +182,8 @@ services:
       mode: global
       resources:
         limits:
-          cpus: '0.25'
           memory: 64M
         reservations:
-          cpus: '0.25'
           memory: 32M
 
   logstash:
@@ -229,10 +207,8 @@ services:
       replicas: 2
       resources:
         limits:
-          cpus: '0.25'
           memory: 800M
         reservations:
-          cpus: '0.25'
           memory: 400M
 
   elasticsearch:
@@ -247,7 +223,7 @@ services:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx4096m"
+      - "ES_JAVA_OPTS=-Xms2048m -XX:MaxRAM=10240M"
     ulimits:
       memlock:
         soft: -1
@@ -266,11 +242,9 @@ services:
         - engine.labels.family == admin
       resources:
         limits:
-          cpus: '2'
-          memory: 16384M
+          memory: 10240M
         reservations:
-          cpus: '0.5'
-          memory: 4096M
+          memory: 2048M
 
   kibana:
     image: kibana:4
@@ -290,8 +264,6 @@ services:
         - engine.labels.family == admin
       resources:
         limits:
-          cpus: '0.25'
           memory: 384M
         reservations:
-          cpus: '0.25'
           memory: 256M
