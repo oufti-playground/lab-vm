@@ -21,7 +21,8 @@ services:
     build:
       context: ./gitserver/
       args:
-      - FIRST_USER=butler
+      - first_user=butler
+      - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp
 
   jenkins:
     restart: unless-stopped
