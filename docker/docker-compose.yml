@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 
 networks:
   default:
@@ -144,7 +144,7 @@ services:
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
-    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+    - JENKINS_EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/jenkins
     - JENKINS_OPTS=--prefix=/jenkins
     env_file: .env
 
