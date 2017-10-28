@@ -1,11 +1,10 @@
 import jenkins.model.JenkinsLocationConfiguration
 
 def env = System.getenv()
-String externalDomain = env['EXTERNAL_DOMAIN']
-String myPublicPort = env['EXTERNAL_PORT']
+String externalUrl = env['JENKINS_EXTERNAL_URL']
 
 jlc = JenkinsLocationConfiguration.get()
 
-jlc.setUrl("http://${externalDomain}:${myPublicPort}/jenkins")
+jlc.setUrl("${externalUrl}")
 
 jlc.save()

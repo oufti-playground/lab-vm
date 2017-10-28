@@ -31,7 +31,7 @@ credentials = new BasicSSHUserPrivateKey(
 credentials_store.addCredentials(global_domain, credentials)
 
 Slave dockerAgent = new DumbSlave(
-  "docker-agent",
+  "docker-node",
   "Agent for Docker",
   "/home/jenkins",
   "4",
@@ -55,7 +55,7 @@ Slave dockerAgent = new DumbSlave(
 )
 
 Slave mavenAgent = new DumbSlave(
-  "maven-agent",
+  "maven-node",
   "Agent for Maven",
   "/home/jenkins",
   "2",
