@@ -5,6 +5,7 @@ export BOX_FILE ?= $(CURDIR)/jenkins-lab-demo.box
 GIT_SUBPROJECT := alpine2docker
 CUSTOMIZE_DIR := $(GIT_SUBPROJECT)/customize
 TMP_LAB_DIR := ./tmp-lab
+TESTS_URL ?= http://localhost:10000
 
 all: box lab
 
@@ -12,9 +13,12 @@ lab: clean-lab init-lab start-lab
 
 clean: clean-lab clean-box
 
-box: clean-box build-box
+box: clean-box build-box test-box
 
 build-box: $(BOX_FILE)
+
+test:
+	TESTS_URL=$(TESTS_URL) bats $(CURDIR)/tests/*.bats
 
 $(BOX_FILE):
 	cp -r ./docker/ ./$(GIT_SUBPROJECT)/customize
@@ -42,4 +46,4 @@ clean-box:
 	cd $(GIT_SUBPROJECT) && git checkout .
 
 .PHONY: all lab box clean build-box clean-box start-lab clean-lab \
-	suspend-lab
+	suspend-lab test
