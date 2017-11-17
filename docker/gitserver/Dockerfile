@@ -1,4 +1,4 @@
-FROM gitea/gitea:1.2
+FROM gitea/gitea:1.3
 
 ARG first_user=dev
 ARG source_repo_to_mirror
@@ -16,9 +16,6 @@ COPY ./setup-gitea.sh /app/setup-gitea.sh
 COPY ./app.ini "${SERVICE_CONFIG_FILE}.tmpl"
 COPY ./entrypoint.sh /usr/bin/entrypoint.sh
 
-# Use Vagrant Insecure Key
-RUN curl -L -o /tmp/id_rsa \
-  https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant
 
 # Pre-configure the embeded Gitserver
 RUN bash /app/setup-gitea.sh

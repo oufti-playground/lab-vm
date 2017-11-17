@@ -38,16 +38,6 @@ curl -v -X POST -s \
   -F "retype=${FIRST_USER}" \
   ${EXTERNAL_URL}/user/sign_up
 
-# Add the Vagrant insecure Public Key to this user
-VAGRANT_PUBLIC_KEY="$(curl -L -s \
-  https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub)"
-
-curl -v -X POST -s \
-  -u "${FIRST_USER}:${FIRST_USER}" \
-  -F "title=vagrant-insecure" \
-  -F "key=${VAGRANT_PUBLIC_KEY}" \
-  ${GITSERVER_API_URL}/user/keys
-
 if [ -n "${SOURCE_REPO_TO_MIRROR}" ]
 then
   echo "=== Loading the custom repos"
