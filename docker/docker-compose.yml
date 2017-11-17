@@ -64,14 +64,14 @@ services:
     - JENKINS_EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/jenkins
     - JENKINS_OPTS=--prefix=/jenkins
 
-  docker-agent:
-    build: ./jenkins-dind-agent/
-    image: docker-agent
+  jenkins-docker-node:
+    build: ./jenkins-dind-node/
+    image: jenkins-docker-node
     read_only: true
     restart: unless-stopped
     privileged: true
     volumes:
-    - docker-agent-data:/home/jenkins
+    - jenkins-docker-node-data:/home/jenkins
     - /var/run
     - /etc
     - /tmp
@@ -80,13 +80,13 @@ services:
     environment:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
-  maven-agent:
-    build: ./jenkins-dind-agent/
+  jenkins-maven-jdk8-node:
+    build: ./jenkins-dind-node/
+    image: jenkins-maven-jdk8-node
     restart: unless-stopped
     read_only: true
-    image: maven-agent
     volumes:
-    - maven-agent-data:/home/jenkins
+    - jenkins-maven-jdk8-node-data:/home/jenkins
     - /etc
     - /tmp
     extra_hosts:
@@ -94,6 +94,22 @@ services:
     environment:
     - START_DOCKER=no
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+
+  jenkins-maven-jdk7-node:
+    build: ./jenkins-jdk7-node/
+    image: jenkins-maven-jdk7-node
+    restart: unless-stopped
+    read_only: true
+    volumes:
+    - jenkins-maven-jdk7-node-data:/home/jenkins
+    - /etc
+    - /tmp
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    environment:
+    - START_DOCKER=no
+    - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+
 
   devbox:
     build: ./devbox/
@@ -162,7 +178,9 @@ volumes:
       type: tmpfs
       device: tmpfs
       o: rw,noexec,size=10m
-  docker-agent-data:
+  jenkins-docker-node-data:
     driver: local
-  maven-agent-data:
+  jenkins-maven-jdk8-node-data:
+    driver: local
+  jenkins-maven-jdk7-node-data:
     driver: local
