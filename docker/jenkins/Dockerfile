@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.73.2-alpine
+FROM jenkins/jenkins:2.73.3-alpine
 
 # Used to provide Custom JVM to all elements (master and agents)
 ARG CUSTOM_JVM_OPTS=-XshowSettings:vm
