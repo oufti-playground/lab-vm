@@ -41,7 +41,7 @@ volumes:
     driver_opts:
       type: tmpfs
       device: tmpfs
-      o: rw,noexec,size=250m
+      o: rw,noexec,size=400m
   devbox-tmp:
     driver: local
     driver_opts:
