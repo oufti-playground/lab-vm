@@ -3,10 +3,124 @@ version: '3.4'
 networks:
   default:
     driver:
-      overlay
+      bridge
   front:
-    external:
-      name: admin_front
+    driver:
+      bridge
+
+services:
+  front:
+    build: ./front/
+    image: front
+    restart: unless-stopped
+    read_only: true
+    ports:
+    - "${EXTERNAL_PORT}:${EXTERNAL_PORT}"
+    depends_on:
+    - jenkins
+    - gitserver
+    - devbox
+    networks:
+    - default
+    - front
+    volumes:
+    - nginx-tmp:/tmp
+    - nginx-cache:/var/cache/nginx
+    - nginx-run:/var/run
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    environment:
+    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+    - EXTERNAL_PORT=${EXTERNAL_PORT}
+    - REGISTRY_URL=${REGISTRY_URL}
+    - REGISTRY_USER=${COMPOSE_PROJECT_NAME:-registry_user}
+
+  gitserver:
+    build:
+      context: ./gitserver/
+      args:
+      - first_user=butler
+      - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp
+    image: gitserver
+    restart: unless-stopped
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    environment:
+    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+    - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
+
+  jenkins:
+    build: ./jenkins/
+    image: jenkins
+    read_only: true
+    volumes:
+    - jenkins-data:/var/jenkins_home
+    - /tmp
+    - jenkins-war:/var/jenkins_home/war
+    - jenkins-plugins:/var/jenkins_home/plugins
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    environment:
+    - JENKINS_EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/jenkins
+    - JENKINS_OPTS=--prefix=/jenkins
+
+  docker-agent:
+    build: ./jenkins-dind-agent/
+    image: docker-agent
+    read_only: true
+    restart: unless-stopped
+    privileged: true
+    volumes:
+    - docker-agent-data:/home/jenkins
+    - /var/run
+    - /etc
+    - /tmp
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    environment:
+    - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+
+  maven-agent:
+    build: ./jenkins-dind-agent/
+    restart: unless-stopped
+    read_only: true
+    image: maven-agent
+    volumes:
+    - maven-agent-data:/home/jenkins
+    - /etc
+    - /tmp
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    environment:
+    - START_DOCKER=no
+    - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+
+  devbox:
+    build: ./devbox/
+    restart: unless-stopped
+    read_only: true
+    ports:
+    - "10080:8080"
+    image: devbox
+    volumes:
+    - devbox-tmp:/tmp
+    environment:
+    - DOCKER_HOST=tcp://docker-service:2375
+    extra_hosts:
+    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+
+  docker-service:
+    image: verb/socat:alpine
+    restart: unless-stopped
+    read_only: true
+    command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
+    volumes:
+    - /var/run/docker.sock:/docker.sock
+
+  docker-registry:
+    image: registry:2
+    restart: unless-stopped
+    read_only: true
 
 # TMPFS Volumes from https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options
 volumes:
@@ -52,194 +166,3 @@ volumes:
     driver: local
   maven-agent-data:
     driver: local
-
-services:
-  front:
-    image: ${REGISTRY_URL}/front
-    depends_on:
-    - jenkins
-    - gitserver
-    - devbox
-    labels:
-    - "traefik.port=10000"
-    - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
-    - "traefik.docker.network=admin_front"
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == app
-      restart_policy:
-        condition: on-failure
-        max_attempts: 6
-        window: 5s
-      labels:
-      - "traefik.port=10000"
-      - "traefik.frontend.rule=Host:${EXTERNAL_DOMAIN}"
-      - "traefik.docker.network=admin_front"
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 16M
-    networks:
-    - default
-    - front
-    volumes:
-    - nginx-tmp:/tmp
-    - nginx-cache:/var/cache/nginx
-    - nginx-run:/var/run
-    extra_hosts:
-    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    env_file: .env
-    environment:
-    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
-    - REGISTRY_URL=${REGISTRY_URL}
-    - REGISTRY_USER=${COMPOSE_PROJECT_NAME:-registry_user}
-
-  gitserver:
-    image: ${REGISTRY_URL}/gitserver
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == app
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 64M
-    extra_hosts:
-    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    env_file: .env
-    environment:
-    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
-    - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
-
-  jenkins:
-    image: ${REGISTRY_URL}/jenkins
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == app
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-      resources:
-        limits:
-          memory: 2560M
-        reservations:
-          memory: 1536M
-    volumes:
-    - jenkins-data:/var/jenkins_home
-    - /tmp
-    - jenkins-war:/var/jenkins_home/war
-    - jenkins-plugins:/var/jenkins_home/plugins
-    extra_hosts:
-    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    environment:
-    - JENKINS_EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/jenkins
-    - JENKINS_OPTS=--prefix=/jenkins
-    env_file: .env
-
-  docker-agent:
-    image: ${REGISTRY_URL}/docker-agent
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == app
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
-    privileged: true
-    volumes:
-    - jenkins-docker-agent-data:/home/jenkins
-    - /var/run
-    - /etc
-    - /tmp
-    extra_hosts:
-    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    environment:
-    - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
-
-  maven-agent:
-    image: ${REGISTRY_URL}/maven-agent
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == app
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-      resources:
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 384M
-    volumes:
-    - maven-agent-data:/home/jenkins
-    - /etc
-    - /tmp
-    extra_hosts:
-    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    environment:
-    - START_DOCKER=no
-    - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
-
-  devbox:
-    image: ${REGISTRY_URL}/devbox
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == app
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-      resources:
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 384M
-    volumes:
-    - devbox-tmp:/tmp
-    environment:
-    - DOCKER_HOST=tcp://docker-service:2375
-    extra_hosts:
-    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-
-  docker-service:
-    image: verb/socat:alpine
-    deploy:
-      placement:
-        constraints:
-        - node.role != manager
-        - engine.labels.family == app
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 2s
-      resources:
-        limits:
-          memory: 16M
-        reservations:
-          memory: 8M
-    command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
-    volumes:
-    - /var/run/docker.sock:/docker.sock
