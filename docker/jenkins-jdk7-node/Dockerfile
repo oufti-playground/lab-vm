@@ -1,7 +1,7 @@
 # Docker-agent image must be built before
 # It will keep openjdk8 for running the slave.jar
 # But will have jdk7 set by default
-FROM docker-agent
+FROM jenkins-maven-jdk8-node
 
 ENV JAVA_HOME=/usr/lib/jvm/java-1.7-openjdk
 

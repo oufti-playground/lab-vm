@@ -1,10 +1,9 @@
 #!/bin/bash
 #
 # This script will launch the dockerd engine in background
-# and try to load the docker-cache
+# and try to load the docker-cache if tar file founds
 
-## DOCKER_STORAGE--storage-driver=overlay2
-set -ex
+set -eu
 
 wait_for_docker_startup_or_exit() {
   # Wait for Docker startup
@@ -21,25 +20,23 @@ wait_for_docker_startup_or_exit() {
   [ "${COUNTER}" -lt "${MAX_TRIES}" ]
 }
 
-write_key() {
-	mkdir -p "${JENKINS_USER_HOME}/.ssh"
-	echo "$1" > "${JENKINS_USER_HOME}/.ssh/authorized_keys"
-	chown -Rf jenkins:jenkins "${JENKINS_USER_HOME}/.ssh"
-	chmod 0700 -R "${JENKINS_USER_HOME}/.ssh"
-}
-
 ####
 # Launch the DinD startup in background
 # with logs on the standard output (for docker logs)
 # only if START_DOCKER is true (default)
 ###
 
-# Use DinD binary to launch Docker Engine with our own explicit opts
 if [ "${START_DOCKER}" == "true" ]
 then
   DOCKER_OPTS="--storage-driver=${DOCKER_STORAGE_DRIVER} --config-file=/etc/docker/daemon.json"
+
+  # Clean up if you reuse /var/run as volume (--force-recreate for example)
   ls -l /var/run/docker.sock || rm -f /var/run/docker.sock
+
+  # Launch Docker Engine (dind= Docker in Docker) in background in debug outputing to stdout
   bash -x /usr/local/bin/dockerd-entrypoint.sh dockerd ${DOCKER_OPTS} >/dev/stdout 2>&1 &
+
+  # Wait 1 second to ensure slow I/O systems are able to start the parent docker engine process
   sleep 1
 
   ###
@@ -55,19 +52,8 @@ else
   echo "-- START_DOCKER equals: ${START_DOCKER}. Not starting Docker."
 fi
 
-# Set SSH runtime settings
-if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
-  write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
-fi
-if [[ $# -gt 0 ]]; then
-  if [[ $1 == ssh-* ]]; then
-    write_key "$1"
-    shift 1
-  else
-    exec "$@"
-  fi
-fi
-ssh-keygen -A
+echo "== Docker started, ${0} wrapper script finished successfully."
 
-# Launch SSH server in foreground
-exec /usr/sbin/sshd -D -e "${@}"
+# Need to wait for Docker engine launched in background to stop
+# because the container will stop as soon as the script exits
+wait
