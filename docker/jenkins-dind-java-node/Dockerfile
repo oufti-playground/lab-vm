@@ -1,7 +1,5 @@
 FROM dind-java-base-image
 
-ARG CUSTOM_JVM_OPTS=-XshowSettings:vm
-
 # Tune SSH Server for Jenkins Usage + sending logs on stdout
 RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config \
   && sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config \
