@@ -4,6 +4,8 @@ set -eux
 
 TEMPLATES_TMP_DIR=/tmp/templates
 
+DNS_RESOLVER_IP="$(grep nameserver /etc/resolv.conf  | head -n1 | awk '{print $2}')"
+export DNS_RESOLVER_IP
 # shellcheck disable=SC2046
 ENV_VAR_LIST=$(printf '${%s} ' $(env | sort | uniq | cut -d'=' -f1 ))
 
@@ -26,10 +28,6 @@ cp -r /etc/nginx-templates "${TEMPLATES_TMP_DIR}"
 # Copy rendered inside Nginx, overwriting existing conf
 cp -r "${TEMPLATES_TMP_DIR}"/* /etc/nginx/
 chmod -R 755 /etc/nginx/
-
-# Uncomment to enable DEBUG for nginx
-# sed -i 's/warn/debug/g' /etc/nginx/*.conf
-# sed -i 's/warn/debug/g' /etc/nginx/conf.d/*.conf
 
 # Run nginx
 nginx -g "daemon off;"
