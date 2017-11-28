@@ -30,10 +30,10 @@ cloudbees-bitbucket-branch-source:2.2.7
 cloudbees-folder:6.2.1
 credentials-binding:1.13
 credentials:2.1.16
-display-url-api:2.1.0
+display-url-api:2.2.0
 docker-commons:1.9
 docker-workflow:1.14
-durable-task:1.16
+durable-task:1.17
 email-ext:2.61
 favorite:2.3.1
 git-client:2.6.0
@@ -50,7 +50,7 @@ jackson2-api:2.8.7.0
 jira:2.5
 jquery-detached:1.2.1
 jsch:0.1.54.1
-junit:1.22.2
+junit:1.23
 ldap:1.18
 mailer:1.20
 mapdb-api:1.0.9.0
@@ -64,13 +64,13 @@ pipeline-github-lib:1.0
 pipeline-graph-analysis:1.5
 pipeline-input-step:2.8
 pipeline-milestone-step:1.3.1
-pipeline-model-api:1.2.4
+pipeline-model-api:1.2.5
 pipeline-model-declarative-agent:1.1.1
-pipeline-model-definition:1.2.4
-pipeline-model-extensions:1.2.4
+pipeline-model-definition:1.2.5
+pipeline-model-extensions:1.2.5
 pipeline-rest-api:2.9
 pipeline-stage-step:2.3
-pipeline-stage-tags-metadata:1.2.4
+pipeline-stage-tags-metadata:1.2.5
 pipeline-stage-view:2.9
 plain-credentials:1.4
 pubsub-light:1.12
@@ -95,6 +95,6 @@ workflow-durable-task-step:2.17
 workflow-job:2.15
 workflow-multibranch:2.16
 workflow-scm-step:2.6
-workflow-step-api:2.13
+workflow-step-api:2.14
 workflow-support:2.16
 ws-cleanup:0.34
