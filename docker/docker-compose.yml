@@ -48,7 +48,7 @@ services:
       context: ./gitserver/
       args:
       - first_user=butler
-      - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp
+      - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp;https://github.com/oufti-playground/demoapp-show-and-tell|demoapp-show-and-tell
     image: gitserver
     restart: unless-stopped
     extra_hosts:
