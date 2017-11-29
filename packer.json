@@ -1,0 +1,60 @@
+{
+  "variables": {
+    "BASE_USER": "butler",
+    "FS_DEVICE_NAME": "/dev/xvdb",
+    "FS_DEVICE_SIZE": "20"
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "name": "aws",
+      "region": "us-east-1",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "Moby Linux * stable",
+          "root-device-type": "ebs"
+        },
+        "most_recent": true
+      },
+      "instance_type": "t2.micro",
+      "ami_block_device_mappings": [
+        {
+          "device_name": "{{user `FS_DEVICE_NAME`}}",
+          "volume_size": "{{user `FS_DEVICE_SIZE`}}",
+          "volume_type": "gp2",
+          "delete_on_termination": true
+        }
+      ],
+      "launch_block_device_mappings": [
+        {
+          "device_name": "{{user `FS_DEVICE_NAME`}}",
+          "volume_size": "{{user `FS_DEVICE_SIZE`}}",
+          "volume_type": "gp2",
+          "delete_on_termination": true
+        }
+      ],
+      "ssh_username": "docker",
+      "ami_name": "oufti-lab-{{timestamp}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "./docker",
+      "destination": "/tmp"
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S /bin/sh '{{ .Path }}'",
+      "inline": [
+        "apk add --no-cache py-pip",
+        "pip install docker-compose",
+        "mv /tmp/docker /docker",
+        "cd /docker;docker-compose build",
+        "docker build -t launcher /docker",
+        "docker run -d -t --restart=always -v /var/run/docker.sock:/var/run/docker.sock launcher"
+      ]
+    }
+  ]
+}

@@ -31,7 +31,7 @@ then
   DOCKER_OPTS="--storage-driver=${DOCKER_STORAGE_DRIVER} --config-file=/etc/docker/daemon.json"
 
   # Clean up if you reuse /var/run as volume (--force-recreate for example)
-  ls -l /var/run/docker.sock || rm -f /var/run/docker.sock
+  rm -f /var/run/docker.*
 
   # Launch Docker Engine (dind= Docker in Docker) in background in debug outputing to stdout
   bash -x /usr/local/bin/dockerd-entrypoint.sh dockerd ${DOCKER_OPTS} >/dev/stdout 2>&1 &
