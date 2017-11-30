@@ -17,6 +17,12 @@ box: clean-box build-box test-box
 
 build-box: $(BOX_FILE)
 
+build-aws:
+	packer build -only=aws $(CURDIR)/packer.json
+
+test-aws:
+	@cd deploy/aws; terraform apply
+
 test:
 	TESTS_URL=$(TESTS_URL) bats $(CURDIR)/tests/*.bats
 
