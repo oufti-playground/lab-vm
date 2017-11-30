@@ -3,7 +3,7 @@
 set -eu -o pipefail
 
 # Set path context
-TARGET_PATH="$(dirname ${0})/.."
+TARGET_PATH="$(dirname ${0})/../docker"
 ABSOLUTE_TARGET_PATH="$(cd ${TARGET_PATH} && pwd)"
 
 # Fetch variable from environment or use default values
