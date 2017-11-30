@@ -20,7 +20,7 @@ build-box: $(BOX_FILE)
 build-aws:
 	packer build -only=aws $(CURDIR)/packer.json
 
-test-aws:
+deploy-aws:
 	@cd deploy/aws; terraform apply
 
 test:
