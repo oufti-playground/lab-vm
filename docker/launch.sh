@@ -15,3 +15,6 @@ echo "DOCKER_BRIDGE_IP=${DOCKER_BRIDGE_IP}" >> "${ENV_FILE}"
 
 # Go go
 docker-compose up --build --force-recreate -d
+
+# Wait (do not forget to allocate a tty)
+cat
