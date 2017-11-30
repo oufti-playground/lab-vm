@@ -132,8 +132,6 @@ services:
     restart: unless-stopped
     read_only: true
     privileged: true
-    ports:
-    - "10080:8080"
     volumes:
     - devbox-tmp:/tmp
     extra_hosts:
