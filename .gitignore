@@ -1,7 +1,8 @@
 .vagrant
 .DS_Store
 *.box
-output*
+output-*
 packer_cache
 tmp-lab
 alpine2docker/customize/**
+deploy/aws/.terraform
