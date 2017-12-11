@@ -61,6 +61,7 @@ services:
     build: ./jenkins/
     image: jenkins
     read_only: true
+    restart: unless-stopped
     volumes:
     - jenkins-data:/var/jenkins_home
     - /tmp
