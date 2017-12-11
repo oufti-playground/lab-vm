@@ -1,5 +1,5 @@
 
-export BOX_VERSION ?= 1.0.0
+export BOX_VERSION ?= 1.2.0
 export BOX_NAME ?= jenkins-lab-demo
 export BOX_FILE ?= $(CURDIR)/jenkins-lab-demo.box
 GIT_SUBPROJECT := alpine2docker
@@ -27,7 +27,7 @@ test:
 	TESTS_URL=$(TESTS_URL) bats $(CURDIR)/tests/*.bats
 
 $(BOX_FILE):
-	cp -r ./docker/ ./$(GIT_SUBPROJECT)/customize
+	cp -r ./docker/ ./$(CUSTOMIZE_DIR)
 	cp ./vagrantfile-box.tpl ./$(GIT_SUBPROJECT)/
 	cd $(GIT_SUBPROJECT) && make all
 
