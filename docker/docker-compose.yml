@@ -78,7 +78,6 @@ services:
     - dind-java-base-image
     build: ./jenkins-dind-java-node/
     image: jenkins-docker-node
-    read_only: true
     restart: unless-stopped
     privileged: true
     volumes:
