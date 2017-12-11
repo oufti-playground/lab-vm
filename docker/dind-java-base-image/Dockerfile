@@ -1,4 +1,4 @@
-FROM docker:stable-dind
+FROM docker:17.11.0-ce-dind
 
 ARG CUSTOM_JVM_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XshowSettings:vm"
 
