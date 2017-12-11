@@ -1,6 +1,7 @@
 import jenkins.model.*
 import hudson.model.*
 import hudson.slaves.*
+import hudson.security.csrf.DefaultCrumbIssuer
 
 def instance = Jenkins.getInstance()
 
@@ -12,6 +13,10 @@ instance.setMode(Node.Mode.EXCLUSIVE)
 // We trust users: enable CSP for hosting content
 System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "")
 
+// Set CSRF
+instance.setCrumbIssuer(new DefaultCrumbIssuer(true))
+
+// SVN was 15 years ago
 instance.setQuietPeriod(0)
 
 instance.save()

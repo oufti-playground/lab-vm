@@ -9,6 +9,7 @@ import hudson.plugins.sshslaves.*;
 import hudson.plugins.sshslaves.verifiers.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty.Entry
 
+//// Set Credentials
 
 global_domain = Domain.global()
 
@@ -33,6 +34,28 @@ credentials = new BasicSSHUserPrivateKey(
 )
 
 credentials_store.addCredentials(global_domain, credentials)
+
+
+/// Disable all protocol except JNLP4
+//// From https://github.com/samrocketman/jenkins-bootstrap-shared/blob/master/scripts/configure-jnlp-agent-protocols.groovy
+Jenkins myJenkins = Jenkins.instance
+
+if(!myJenkins.isQuietingDown()) {
+    Set<String> agentProtocolsList = ['JNLP4-connect', 'Ping']
+    if(!myJenkins.getAgentProtocols().equals(agentProtocolsList)) {
+        myJenkins.setAgentProtocols(agentProtocolsList)
+        println "Agent Protocols have changed.  Setting: ${agentProtocolsList}"
+        myJenkins.save()
+    }
+    else {
+        println "Nothing changed.  Agent Protocols already configured: ${myJenkins.getAgentProtocols()}"
+    }
+}
+else {
+    println 'Shutdown mode enabled.  Configure Agent Protocols SKIPPED.'
+}
+
+/// Configure and start Agents on Nodes
 
 Slave dockerNode = new DumbSlave(
   "docker-node",
