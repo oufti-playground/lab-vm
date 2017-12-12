@@ -30,8 +30,10 @@ if [ "${START_DOCKER}" == "true" ]
 then
   DOCKER_OPTS="--storage-driver=${DOCKER_STORAGE_DRIVER} --config-file=/etc/docker/daemon.json"
 
-  # Clean up if you reuse /var/run as volume (--force-recreate for example)
-  rm -f /var/run/docker.*
+  # Clean up previous docker instances
+  ps faux | grep docker | grep -v grep | awk '{print $1}' | xargs kill || echo "Nothing to stop"
+  ps faux | grep containerd | grep -v grep | awk '{print $1}' | xargs kill || echo "Nothing to stop"
+  rm -rf /var/run/docker*
 
   # Launch Docker Engine (dind= Docker in Docker) in background in debug outputing to stdout
   bash -x /usr/local/bin/dockerd-entrypoint.sh dockerd ${DOCKER_OPTS} >/dev/stdout 2>&1 &
