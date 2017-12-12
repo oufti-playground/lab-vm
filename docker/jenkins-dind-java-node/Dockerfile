@@ -12,6 +12,9 @@ RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config \
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
+HEALTHCHECK --start-period=3s --interval=10s --retries=3 --timeout=2s \
+  CMD curl -f http://localhost:2375/_ping || exit 1
+
 EXPOSE 22
 
 # Overwrite parent execution
