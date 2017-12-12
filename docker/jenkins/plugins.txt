@@ -10,7 +10,7 @@ blueocean-config:1.3.4
 blueocean-dashboard:1.3.4
 blueocean-display-url:2.2.0
 blueocean-events:1.3.4
-blueocean-git-pipeline:1.3.41.37
+blueocean-git-pipeline:1.3.4
 blueocean-github-pipeline:1.3.4
 blueocean-i18n:1.3.4
 blueocean-jira:1.3.4
