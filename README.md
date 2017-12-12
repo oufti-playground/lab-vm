@@ -3,6 +3,8 @@
 This repository contains everything need to create a standalone
 VirtualBox + vagrant VM to play with Jenkins.
 
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+
 ## Requirements
 
 * This VM needs VirtualBox and Vagrant installed
