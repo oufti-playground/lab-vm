@@ -18,4 +18,5 @@ echo 'export PS1="\u@devbox [\w]> "' \
 rngd -r /dev/urandom
 
 # Launch TTYD server in foreground
+cd "$(grep ${DEFAULT_USER} /etc/passwd | cut -d':' -f6)"
 exec su -c "ttyd bash" "${DEFAULT_USER}"
