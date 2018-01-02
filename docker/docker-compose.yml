@@ -138,7 +138,8 @@ services:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
 
   docker-service:
-    image: verb/socat:alpine
+    build: ./docker-service/
+    image: docker-service
     restart: unless-stopped
     read_only: true
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock

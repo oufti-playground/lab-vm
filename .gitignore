@@ -2,7 +2,10 @@
 .DS_Store
 *.box
 output-*
+*.tar
+*.iso
 packer_cache
 tmp-lab
 alpine2docker/customize/**
 deploy/aws/.terraform
+linuxkit
