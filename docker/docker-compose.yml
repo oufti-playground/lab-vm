@@ -9,17 +9,8 @@ networks:
       bridge
 
 services:
-
-  # This is a "virtual service" used to provide a base image
-  dind-java-base-image:
-    build: ./dind-java-base-image
-    image: dind-java-base-image # Fix name to avoid inheritance
-    read_only: true # Less space used
-    entrypoint: "true" # Start and stop just to justify the service existence
-
   front:
     build: ./front/
-    image: front
     restart: unless-stopped
     read_only: true
     ports:
@@ -49,7 +40,6 @@ services:
       args:
       - first_user=butler
       - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp
-    image: gitserver
     restart: unless-stopped
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
@@ -59,7 +49,6 @@ services:
 
   jenkins:
     build: ./jenkins/
-    image: jenkins
     read_only: true
     restart: unless-stopped
     volumes:
@@ -74,10 +63,9 @@ services:
     - JENKINS_OPTS=--prefix=/jenkins
 
   jenkins-docker-node:
-    depends_on:
-    - dind-java-base-image
-    build: ./jenkins-dind-java-node/
-    image: jenkins-docker-node
+    build:
+      context: ./dind-java-images/
+      target: jenkins-maven-jdk8-node
     restart: unless-stopped
     privileged: true
     volumes:
@@ -91,10 +79,9 @@ services:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   jenkins-maven-jdk8-node:
-    depends_on:
-    - dind-java-base-image
-    build: ./jenkins-dind-java-node/
-    image: jenkins-maven-jdk8-node
+    build:
+      context: ./dind-java-images/
+      target: jenkins-maven-jdk8-node
     restart: unless-stopped
     read_only: true
     volumes:
@@ -108,10 +95,9 @@ services:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   jenkins-maven-jdk7-node:
-    depends_on:
-    - jenkins-maven-jdk8-node
-    build: ./jenkins-jdk7-node/
-    image: jenkins-maven-jdk7-node
+    build:
+      context: ./dind-java-images/
+      target: jenkins-maven-jdk7-node
     restart: unless-stopped
     read_only: true
     volumes:
@@ -125,10 +111,9 @@ services:
     - JENKINS_SLAVE_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 
   devbox:
-    depends_on:
-    - jenkins-maven-jdk8-node
-    build: ./devbox/
-    image: devbox
+    build:
+      context: ./dind-java-images/
+      target: devbox
     restart: unless-stopped
     read_only: true
     privileged: true
@@ -139,7 +124,6 @@ services:
 
   docker-service:
     build: ./docker-service/
-    image: docker-service
     restart: unless-stopped
     read_only: true
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
