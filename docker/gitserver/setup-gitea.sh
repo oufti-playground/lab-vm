@@ -5,11 +5,13 @@ set -e -o pipefail -x
 
 # Parameters
 GITSERVER_API_URL="${EXTERNAL_URL}/api/v1"
-GITEA_RUN_USER="$(grep 'RUN_USER' ${SERVICE_CONFIG_FILE}* | sort | uniq | head -n1 | awk '{print $3}')"
+GITEA_RUN_USER=$(awk -F "=" '/RUN_USER/ {print $2}' ${SERVICE_CONFIG_FILE}* | tr -d ' ' | head -n1)
 CUSTOM_DATA_DIRECTORY="/app/data"
 
+# Initial checks
+id -u ${GITEA_RUN_USER} || (echo "${GITEA_RUN_USER} user does not exists" && exit 1)
 mkdir -p "${CUSTOM_DATA_DIRECTORY}"
-chown -R "${GITEA_RUN_USER}:${GITEA_RUN_USER}" "${CUSTOM_DATA_DIRECTORY}"
+chown -R "${GITEA_RUN_USER}" "${CUSTOM_DATA_DIRECTORY}"
 
 # We need a prebaked configuration
 cp "${SERVICE_CONFIG_FILE}.tmpl" "${SERVICE_CONFIG_FILE}"
