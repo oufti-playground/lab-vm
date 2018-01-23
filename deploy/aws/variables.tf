@@ -2,7 +2,7 @@ variable "lab_amis" {
   description = "Mapping regions to the lab AMI IDs"
   type = "map"
   default = {
-    "eu-central-1" = "ami-97ed62f8"
+    "eu-central-1" = "ami-54851c3b"
   }
 }
 
