@@ -20,8 +20,8 @@ box: clean-box build-box test-box
 docker:
 	cd ./docker && docker-compose build
 
-docker-deploy: docker
-	docker login -u $(DOCKER_USER) -p $(DOCKER_PASSWORD)
+docker-deploy:
+	docker login -u "$(DOCKER_USER)" -p "$(DOCKER_PASSWORD)"
 	cd ./docker && docker-compose push
 
 build-box: $(BOX_FILE)
