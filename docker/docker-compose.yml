@@ -11,6 +11,7 @@ networks:
 services:
   front:
     build: ./front/
+    image: dduportal/oufti-front
     restart: unless-stopped
     read_only: true
     ports:
@@ -40,6 +41,7 @@ services:
       args:
       - first_user=butler
       - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp
+    image: dduportal/oufti-gitserver
     restart: unless-stopped
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
@@ -49,6 +51,7 @@ services:
 
   jenkins:
     build: ./jenkins/
+    image: dduportal/oufti-jenkins
     read_only: true
     restart: unless-stopped
     volumes:
@@ -66,6 +69,7 @@ services:
     build:
       context: ./dind-java-images/
       target: jenkins-maven-jdk8-node
+    image: dduportal/oufti-jenkins-docker-node
     restart: unless-stopped
     privileged: true
     volumes:
@@ -82,6 +86,7 @@ services:
     build:
       context: ./dind-java-images/
       target: jenkins-maven-jdk8-node
+    image: dduportal/oufti-jenkins-maven-jdk8-node
     restart: unless-stopped
     read_only: true
     volumes:
@@ -98,6 +103,7 @@ services:
     build:
       context: ./dind-java-images/
       target: jenkins-maven-jdk7-node
+    image: dduportal/oufti-jenkins-maven-jdk7-node
     restart: unless-stopped
     read_only: true
     volumes:
@@ -114,6 +120,7 @@ services:
     build:
       context: ./dind-java-images/
       target: devbox
+    image: dduportal/oufti-devbox
     restart: unless-stopped
     read_only: true
     privileged: true
@@ -124,16 +131,12 @@ services:
 
   docker-service:
     build: ./docker-service/
+    image: dduportal/oufti-docker-service
     restart: unless-stopped
     read_only: true
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     volumes:
     - /var/run/docker.sock:/docker.sock
-
-  docker-registry:
-    image: registry:2
-    restart: unless-stopped
-    read_only: true
 
 # TMPFS Volumes from https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options
 volumes:

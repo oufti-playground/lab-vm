@@ -15,6 +15,12 @@ clean: clean-lab clean-box
 
 box: clean-box build-box test-box
 
+docker:
+	cd ./docker && docker-compose build
+
+docker-deploy: docker
+	cd ./docker && docker-compose push
+
 build-box: $(BOX_FILE)
 
 build-aws:
@@ -52,4 +58,4 @@ clean-box:
 	cd $(GIT_SUBPROJECT) && git checkout .
 
 .PHONY: all lab box clean build-box clean-box start-lab clean-lab \
-	suspend-lab test
+	suspend-lab test docker docker-deploy

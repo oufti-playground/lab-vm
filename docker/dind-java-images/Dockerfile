@@ -60,9 +60,7 @@ RUN apk add --no-cache \
     nano \
     rng-tools \
     ttyd \
-    vim \
-  && git config --global user.email "${user}@localhost.local" \
-  && git config --global user.name "${user}"
+    vim
 COPY devbox-entrypoint.sh /usr/local/bin/entrypoint.sh
 EXPOSE 7681
 ENTRYPOINT ["/sbin/tini","-g","--","bash"]
