@@ -24,8 +24,6 @@ script:
 # 2 - Set the environment variable DOCKERHUB_USERNAME in Travis Settings
 deploy:
 - provider: script
-  script:
-  - docker login -u "dduportal" -p "$DOCKER_PASSWORD"
-  - make docker-deploy
+  script: make docker-deploy
   on:
     condition: $TRAVIS_BRANCH = master
