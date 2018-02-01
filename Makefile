@@ -6,7 +6,8 @@ GIT_SUBPROJECT := alpine2docker
 CUSTOMIZE_DIR := $(GIT_SUBPROJECT)/customize
 TMP_LAB_DIR := ./tmp-lab
 TESTS_URL ?= http://localhost:10000
-export DOCKER_USER ?= dduportal
+export DOCKER_USERNAME ?= dduportal
+export DOCKER_PASSWORD ?=
 
 all: box lab
 
@@ -16,10 +17,13 @@ clean: clean-lab clean-box
 
 box: clean-box build-box test-box
 
+docker-login:
+	docker login -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)"
+
 docker:
 	cd ./docker && docker-compose build
 
-docker-deploy:
+docker-deploy: docker-login
 	cd ./docker && docker-compose push
 
 build-box: $(BOX_FILE)
@@ -59,4 +63,4 @@ clean-box:
 	cd $(GIT_SUBPROJECT) && git checkout .
 
 .PHONY: all lab box clean build-box clean-box start-lab clean-lab \
-	suspend-lab test docker docker-deploy
+	suspend-lab test docker docker-deploy docker-login
