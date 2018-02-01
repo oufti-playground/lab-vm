@@ -1,7 +1,7 @@
 FROM jenkins/jenkins:2.89.3-alpine
 
 # Used to provide Custom JVM to all elements (master and agents)
-ARG CUSTOM_JVM_OPTS=-XshowSettings:vm -Djenkins.install.runSetupWizard=false
+ARG CUSTOM_JVM_OPTS='-XshowSettings:vm -Djenkins.install.runSetupWizard=false'
 ENV CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS}
 
 # Install Plugins
