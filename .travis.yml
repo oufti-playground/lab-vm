@@ -13,6 +13,8 @@ before_install:
   - sudo mv docker-compose "${DOCKER_COMPOSE_BIN}"
 
 script:
+- export DOCKER_PASSWORD
+- make docker-login
 - make docker
 
 # Do not deploy if Pull Request
