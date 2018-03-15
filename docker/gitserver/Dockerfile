@@ -1,4 +1,4 @@
-FROM gitea/gitea:1.3
+FROM gitea/gitea:1.4
 
 ARG first_user=dev
 ARG source_repo_to_mirror
