@@ -34,7 +34,8 @@ docker-compose exec jenkins curl -L -s -S -o "${JENKINS_CLI_PATH}" \
 
 # We fetch the list of plugins
 docker-compose exec jenkins java -jar ${JENKINS_CLI_PATH} \
-  -s ${JENKINS_PRIVATE_URL} list-plugins \
+  -s ${JENKINS_PRIVATE_URL} -auth "${JENKINS_ADMIN_USER}:${JENKINS_ADMIN_PASSWORD}" \
+  list-plugins \
   | grep ')[[:cntrl:]]*$' \
   | awk '{ print $1 }' \
   > ${PLUGIN_TXT_LIST_FILE}
@@ -43,7 +44,8 @@ echo "Plugin list written in ${PLUGIN_TXT_LIST_FILE}"
 # We request a plugin install to latest version for each
 if [ -n "$(cat ${PLUGIN_TXT_LIST_FILE})" ]; then
   docker-compose exec jenkins java -jar "${JENKINS_CLI_PATH}" \
-    -s "${JENKINS_PRIVATE_URL}" install-plugin -restart --username "${JENKINS_ADMIN_USER}" --password "${JENKINS_ADMIN_PASSWORD}" \
+    -s "${JENKINS_PRIVATE_URL}" -auth "${JENKINS_ADMIN_USER}:${JENKINS_ADMIN_PASSWORD}" \
+    install-plugin -restart \
     $(cat ${PLUGIN_TXT_LIST_FILE} | sed ':a;N;$!ba;s/\n/ /g')
 fi
 sleep 5
