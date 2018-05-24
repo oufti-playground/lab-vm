@@ -17,7 +17,7 @@ SCMSource scm = new jenkins.plugins.git.GitSCMSource(
 LibraryRetriever libRetriever = new SCMSourceRetriever(scm)
 
 LibraryConfiguration libConfig = new LibraryConfiguration(
-  "deploy",
+  "pipeline-libraries",
   libRetriever
 )
 
