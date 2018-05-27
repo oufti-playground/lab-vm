@@ -62,7 +62,7 @@ Slave dockerNode = new DumbSlave(
   "Node for running Docker",
   "/home/jenkins",
   "4",
-  Node.Mode.NORMAL,
+  Node.Mode.EXCLUSIVE,
   "docker",
   new SSHLauncher(
     "jenkins-docker-node", // HostName
@@ -121,7 +121,7 @@ Slave mavenJDK7Node = new DumbSlave(
   "Node for running Maven with OpenJDK7",
   "/home/jenkins",
   "2",
-  Node.Mode.NORMAL,
+  Node.Mode.EXCLUSIVE,
   "jdk7 java7 maven-jdk7 maven-java7 maven3-jdk7 maven3-java7",
   new SSHLauncher(
     "jenkins-maven-jdk7-node", // HostName
