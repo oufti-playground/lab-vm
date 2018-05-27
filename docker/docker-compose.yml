@@ -40,14 +40,15 @@ services:
       context: ./gitserver/
       args:
       - first_user=butler
-      - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp
+      - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp|private|webhook
     image: ${DOCKER_USERNAME}/oufti-gitserver
     restart: unless-stopped
     extra_hosts:
     - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
-    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
     - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
+    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+    - LOAD_SSH_KEY_FROM_JENKINS=true
 
   jenkins:
     build: ./jenkins/
