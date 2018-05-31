@@ -1,4 +1,4 @@
-FROM gitea/gitea@sha256:776fea5667a1067cc57b8098f69264194ad1b34864e50be9ef0b51e189ef7c11
+FROM gitea/gitea:1.3.3
 
 ARG first_user
 ARG source_repo_to_mirror
