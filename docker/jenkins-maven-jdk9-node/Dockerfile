@@ -11,6 +11,7 @@ ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
+    git \
     maven \
     netcat \
     openjdk-8-jdk \
