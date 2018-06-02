@@ -63,7 +63,6 @@ RUN apk add --no-cache \
     vim
 COPY devbox-entrypoint.sh /usr/local/bin/entrypoint.sh
 EXPOSE 7681
-ENTRYPOINT ["/sbin/tini","-g","--","bash"]
 CMD ["/usr/local/bin/entrypoint.sh"]
 
 FROM dind-java-base-image AS jenkins-maven-jdk8-node
@@ -76,16 +75,7 @@ RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config \
   && mkdir /var/run/sshd \
   && rm -f /var/log/auth.log \
   && ln -s /dev/stdout /var/log/auth.log
-COPY jenkins-jdk8-node-entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY jenkins-node-entrypoint.sh /usr/local/bin/entrypoint.sh
+
 EXPOSE 22
 CMD ["/usr/local/bin/entrypoint.sh"]
-
-
-# Docker-agent image must be built before
-# It will keep openjdk8 for running the slave.jar
-# But will have jdk7 set by default
-FROM jenkins-maven-jdk8-node AS jenkins-maven-jdk7-node
-ENV JAVA_HOME=/usr/lib/jvm/java-1.7-openjdk
-RUN apk add --no-cache openjdk7 \
-  && unlink /usr/lib/jvm/default-jvm \
-  && ln -s "${JAVA_HOME}" /usr/lib/jvm/default-jvm
