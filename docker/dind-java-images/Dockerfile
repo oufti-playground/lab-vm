@@ -76,6 +76,8 @@ RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config \
   && rm -f /var/log/auth.log \
   && ln -s /dev/stdout /var/log/auth.log
 COPY jenkins-node-entrypoint.sh /usr/local/bin/entrypoint.sh
+HEALTHCHECK --start-period=3s --interval=10s --retries=3 --timeout=2s \
+  CMD nc localhost 22 </dev/null | grep OpenSSH || exit 1
 
 EXPOSE 22
 CMD ["/usr/local/bin/entrypoint.sh"]

@@ -15,3 +15,6 @@ RUN curl -L -o /usr/share/jenkins/ref/insecure_vagrant_key \
   && chmod 0600 /usr/share/jenkins/ref/insecure_vagrant_key
 
 ENV JAVA_OPTS="${CUSTOM_JVM_OPTS}"
+
+HEALTHCHECK --start-period=3s --interval=10s --retries=3 --timeout=2s \
+  CMD curl -f http://localhost:8080/jenkins || exit 1

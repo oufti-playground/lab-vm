@@ -24,6 +24,12 @@ VOLUME "/app/data"
 # Custom SSH
 EXPOSE 5022
 
+HEALTHCHECK --start-period=10s --interval=10s --retries=3 --timeout=2s \
+  CMD wget localhost:3000 --spider
+
+HEALTHCHECK --start-period=10s --interval=10s --retries=3 --timeout=2s \
+  CMD nc -z localhost 5022
+
 # Custom Entrypoint
 ENTRYPOINT ["/sbin/tini","-g","--"]
 CMD ["bash","/usr/local/bin/entrypoint.sh"]
