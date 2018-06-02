@@ -57,15 +57,15 @@ else {
 
 /// Configure and start Agents on Nodes
 
-Slave dockerNode = new DumbSlave(
-  "docker-node",
-  "Node for running Docker",
+Slave productionNode = new DumbSlave(
+  "production-node",
+  "Node for production deployment, and Docker Workloads",
   "/home/jenkins",
-  "4",
+  "1",
   Node.Mode.EXCLUSIVE,
-  "docker",
+  "deploy production docker",
   new SSHLauncher(
-    "jenkins-docker-node", // HostName
+    "jenkins-production-node", // HostName
     22,
     'ssh-nodes-key', // Credential ID
     customJvmOpts, // JVM Options
@@ -81,19 +81,19 @@ Slave dockerNode = new DumbSlave(
   new LinkedList()
 )
 
-List<Entry> dockerNodeEnv = new ArrayList<Entry>();
-dockerNodeEnv.add(new Entry("JAVA_HOME","${jdk8Home}"))
-dockerNodeEnv.add(new Entry("DOCKER_HOST","unix:///var/run/docker.sock"))
-EnvironmentVariablesNodeProperty dockerNodeEnvPro = new EnvironmentVariablesNodeProperty(dockerNodeEnv);
-dockerNode.getNodeProperties().add(dockerNodeEnvPro)
+List<Entry> productionNodeEnv = new ArrayList<Entry>();
+productionNodeEnv.add(new Entry("JAVA_HOME","${jdk8Home}"))
+productionNodeEnv.add(new Entry("DOCKER_HOST","unix:///var/run/docker.sock"))
+EnvironmentVariablesNodeProperty productionNodeEnvPro = new EnvironmentVariablesNodeProperty(productionNodeEnv);
+productionNode.getNodeProperties().add(productionNodeEnvPro)
 
 Slave mavenJDK8Node = new DumbSlave(
   "maven-jdk8-node",
-  "Node for running Maven with OpenJDK8",
+  "Node for running Maven with OpenJDK8, or Docker workloads",
   "/home/jenkins",
-  "2",
+  "4",
   Node.Mode.NORMAL,
-  "jdk8 java8 maven maven-jdk8 maven-java8 maven3 maven3-jdk8 maven3-java8",
+  "jdk8 java8 maven maven-jdk8 maven-java8 maven3 maven3-jdk8 maven3-java8 docker",
   new SSHLauncher(
     "jenkins-maven-jdk8-node", // HostName
     22,
@@ -146,7 +146,7 @@ EnvironmentVariablesNodeProperty jdk7SSHNodeEnvPro = new EnvironmentVariablesNod
 mavenJDK7Node.getNodeProperties().add(jdk7SSHNodeEnvPro)
 
 
-Jenkins.instance.addNode(dockerNode)
+Jenkins.instance.addNode(productionNode)
 println("Added successfully 'docker-node' to Jenkins")
 
 Jenkins.instance.addNode(mavenJDK8Node)
