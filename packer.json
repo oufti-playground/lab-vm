@@ -8,7 +8,7 @@
     {
       "type": "amazon-ebs",
       "name": "aws",
-      "region": "eu-central-1",
+      "region": "us-east-1",
       "source_ami_filter": {
         "filters": {
           "virtualization-type": "hvm",
