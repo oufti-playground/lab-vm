@@ -14,7 +14,7 @@ lab: clean-lab init-lab start-lab
 
 clean: clean-lab clean-box
 
-box: clean-box build-box test-box
+box: clean-box build-box test
 
 docker:
 	cd ./docker && docker-compose build
