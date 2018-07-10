@@ -38,17 +38,39 @@ services:
   gitserver:
     build:
       context: ./gitserver/
-      args:
-      - first_user=butler
-      - source_repo_to_mirror=https://github.com/oufti-playground/demoapp|demoapp|private|webhook
     image: ${DOCKER_USERNAME}/oufti-gitserver
     restart: unless-stopped
     extra_hosts:
-    - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+      - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
-    - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
-    - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
-    - LOAD_SSH_KEY_FROM_JENKINS=true
+      - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
+      - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
+      - FIRST_USER=butler
+      - LOAD_SSH_KEY_FROM_JENKINS=true # Autoload the BlueOcean SSH Key into Gitea
+      - SOURCE_REPO_CONFIG=/tmp/repositories.json
+    volumes:
+      - /app/data
+      - ./gitserver/repositories.json:/tmp/repositories.json:ro
+    healthcheck:
+      test: ["CMD", "wget", "http://butler:butler@localhost:3000/butler/demoapp","--spider"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 10s
+
+  gitserver-db:
+    image: postgres:10-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=gitea
+      - POSTGRES_PASSWORD=gitea
+      - POSTGRES_DB=gitea
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost","5432"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 10s
 
   jenkins:
     build: ./jenkins/

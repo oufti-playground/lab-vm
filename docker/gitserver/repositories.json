@@ -1,0 +1,10 @@
+{
+  "repositories": [
+    {
+      "name": "demoapp",
+      "url": "https://github.com/oufti-playground/demoapp",
+      "visibility": "private",
+      "webhook_url": "http://jenkins:8080/jenkins/git/notifyCommit?url=ssh://git@gitserver:5022/butler/demoapp.git"
+    }
+  ]
+}

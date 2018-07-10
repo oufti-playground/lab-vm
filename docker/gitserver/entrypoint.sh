@@ -3,22 +3,33 @@
 # Custom Entrypoint for Gite that will render templates before starting
 #
 
-set -ex -o pipefail
+set -ex
 
-# Check if we need custom configuration (can be done at runtime instead of build time)
+DATA_DIR=/app/data
+
+# Reusable functions
+log_message() {
+  echo "[entrypoint] ${*}"
+}
+
 set +u
-if [ ! -f /app/data/.semaphore ] && [ -n "${SOURCE_REPO_TO_MIRROR}" ] && [ -n "${FIRST_USER}" ]
+# Check if we need custom configuration (can be done at runtime instead of build time)
+if [ ! -f "${DATA_DIR}/.semaphore" ] && [ -n "${FIRST_USER}" ]
 then
-  echo "== No Semaphore file found in /app/data/.semaphore"
-  echo "=> Conditions found for runtime customization. Launching in background"
+  log_message "== No Semaphore file found in ${DATA_DIR}/.semaphore"
+  log_message "=> Conditions found for runtime customization. Launching in background"
 
   # Run customization in background
-  nohup bash /app/setup-gitea.sh >/dev/stdout 2>/dev/stdout &
+  nohup bash /app/setup-gitea.sh >/dev/stdout 2>&1 &
 fi
 set -u
 
-cat "${SERVICE_CONFIG_FILE}.tmpl" \
-  | sed "s#ROOT_URL.*=.*#ROOT_URL = ${EXTERNAL_URL}#g" \
+# Ensure we have the $DATA_DIR created with the rights
+mkdir -p "${DATA_DIR}"
+chown -R 1000:1000 "${DATA_DIR}"
+
+sed "s#ROOT_URL.*=.*#ROOT_URL = ${EXTERNAL_URL}#g" \
+  "${SERVICE_CONFIG_FILE}.tmpl" \
   | sed "s#^DOMAIN.*#DOMAIN = ${EXTERNAL_DOMAIN}#g" \
   | tee /data/gitea/conf/app.ini
 

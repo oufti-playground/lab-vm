@@ -2,24 +2,36 @@
 
 set -eux -o pipefail
 
-JENKINS_URL=${JENKINS_URL:-http://jenkins:8080/jenkins}
-JENKINS_ADMIN_USER=${JENKINS_ADMIN_USER:-butler}
-JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD:-butler}
-GITSERVER_URL=${EXTERNAL_URL}
-GITSERVER_API_URL="${GITSERVER_URL}/api/v1"
-GITSERVER_ADMIN_USER=${GITSERVER_ADMIN_USER:-butler}
-GITSERVER_ADMIN_PASSWORD=${GITSERVER_ADMIN_PASSWORD:-butler}
+JENKINS_ADMIN_PASSWORD="${JENKINS_ADMIN_PASSWORD:-"${JENKINS_ADMIN_USER}"}"
+GITSERVER_API_URL="http://127.0.0.1:3000/api/v1"
+GITSERVER_ADMIN_USER="${GITSERVER_ADMIN_USER:-"${FIRST_USER}"}"
+GITSERVER_ADMIN_PASSWORD="${GITSERVER_ADMIN_PASSWORD:-"${FIRST_USER}"}"
 TIME_TO_WAIT=5
+DATA_DIR=/app/data
+
+# Reusable functions
+log_message() {
+  echo "[set-key-from-jenkins-to-gitea] ${*}"
+}
 
 set +e
+#### Wait for local Gitea personalization
+log_message "Waiting for Gitea customization."
+while true; do
+  [ ! -f "${DATA_DIR}/.semaphore" ] || break
+  log_message "No semaphore found at ${DATA_DIR}/.semaphore. Waiting ${TIME_TO_WAIT}."
+  sleep "${TIME_TO_WAIT}"
+done
+
 #### Waiting for Jenkins to be ready
+log_message "Waiting for Jenkins readiness."
 while true; do
   HTTP_RESULT="$(curl --output /dev/null --write-out '%{http_code}\n' \
     --silent -L -u "${JENKINS_ADMIN_USER}:${JENKINS_ADMIN_PASSWORD}"\
      "${JENKINS_URL}/credentials")"
 
   [ "${HTTP_RESULT}" -eq 200 ] && break \
-    || echo "Got HTTP code ${HTTP_RESULT} from Jenkins. Waiting ${TIME_TO_WAIT}s before retrying"
+    || log_message "Got HTTP code ${HTTP_RESULT} from Jenkins. Waiting ${TIME_TO_WAIT}s before retrying"
 
   sleep "${TIME_TO_WAIT}"
 done
@@ -29,7 +41,7 @@ while true; do
   curl -u "${GITSERVER_ADMIN_USER}:${GITSERVER_ADMIN_PASSWORD}" \
       --fail "${GITSERVER_API_URL}/user" \
   && break || \
-    echo "Gitserver still not started, waiting ${TIME_TO_WAIT}s before retrying"
+    log_message "Gitserver still not started, waiting ${TIME_TO_WAIT}s before retrying"
 
   sleep "${TIME_TO_WAIT}"
 done
@@ -47,5 +59,5 @@ curl -v -X POST -s \
   -F "key=${PUBLIC_KEY}" \
   ${GITSERVER_API_URL}/user/keys
 
-echo "== Blue Ocean Key added to Gitea"
+log_message "== Blue Ocean Key added to Gitea"
 exit 0
