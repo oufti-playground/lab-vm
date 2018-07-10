@@ -10,6 +10,6 @@ RUN chmod a+x /usr/local/bin/entrypoint.sh
 HEALTHCHECK --start-period=3s --interval=10s --retries=3 --timeout=2s \
   CMD wget localhost:80 --spider
 
-VOLUME ["/etc/nginx"]
+VOLUME ["/etc/nginx","/tmp","/var/cache/nginx","/var/run"]
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
