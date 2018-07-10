@@ -1,9 +1,7 @@
-
 provider "aws" {
-  region  = "${var.lab_region}"
-  alias   = "default"
+  region = "${var.lab_region}"
+  alias  = "default"
 }
-
 
 resource "aws_instance" "lab_node" {
   ami           = "${lookup(var.lab_amis,var.lab_region)}"
@@ -11,7 +9,7 @@ resource "aws_instance" "lab_node" {
   count         = "${var.lab_instances_count}"
 
   security_groups = [
-    "${aws_security_group.lab_sg.name}"
+    "${aws_security_group.lab_sg.name}",
   ]
 
   associate_public_ip_address = true
@@ -35,6 +33,14 @@ resource "aws_security_group" "lab_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ## Allow outgoing ssh for git repositories
+  egress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   ## Allow ingress on HTTP and SSH on 10000
   ingress {
     from_port   = 10000
@@ -42,6 +48,7 @@ resource "aws_security_group" "lab_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   ingress {
     from_port   = 22
     to_port     = 22
