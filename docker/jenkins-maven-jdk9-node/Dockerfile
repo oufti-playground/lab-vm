@@ -33,7 +33,7 @@ RUN sed -i /etc/ssh/sshd_config \
   && rm -f /var/log/auth.log \
   && ln -s /dev/stdout /var/log/auth.log
 
-VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
+VOLUME "${JENKINS_AGENT_HOME}" /tmp /run /var/run
 WORKDIR "${JENKINS_AGENT_HOME}"
 
 COPY jenkins-node-entrypoint.sh /usr/local/bin/entrypoint.sh

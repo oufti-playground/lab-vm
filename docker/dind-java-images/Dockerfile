@@ -1,4 +1,4 @@
-FROM docker:18.03.1-ce-dind AS dind-java-base-image
+FROM docker:18.05.0-ce-dind AS dind-java-base-image
 ARG CUSTOM_JVM_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XshowSettings:vm"
 ENV DEFAULT_USER_HOME=/home/jenkins \
   DEFAULT_USER=jenkins \
@@ -44,7 +44,7 @@ RUN apk add --no-cache \
   && echo 'MAVEN_OPTS="'${CUSTOM_JVM_OPTS}'"' >> /etc/mavenrc
 COPY daemon.json /etc/docker/daemon.json
 COPY dind-entrypoint.sh /usr/local/bin/dind-entrypoint.sh
-VOLUME ${DEFAULT_USER_HOME} /docker-cache /var/run /run /etc/docker
+VOLUME ${DEFAULT_USER_HOME} /docker-cache /var/run /run /etc/docker /tmp
 HEALTHCHECK --start-period=3s --interval=10s --retries=3 --timeout=2s \
   CMD curl -f http://localhost:2375/_ping || exit 1
 ENTRYPOINT ["/sbin/tini","-g","--","bash"]
