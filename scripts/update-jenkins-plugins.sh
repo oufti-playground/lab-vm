@@ -7,20 +7,29 @@ TARGET_PATH="$(dirname ${0})/../docker"
 ABSOLUTE_TARGET_PATH="$(cd ${TARGET_PATH} && pwd)"
 
 # Fetch variable from environment or use default values
-JENKINS_URL=${JENKINS_URL:-http://localhost:10000/jenkins/}
 JENKINS_PRIVATE_URL=${JENKINS_PRIVATE_URL:-http://localhost:8080/jenkins}
 JENKINS_ADMIN_USER=${JENKINS_ADMIN_USER:-butler}
 JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD:-butler}
 
-cd ${ABSOLUTE_TARGET_PATH} || \
+pushd ${ABSOLUTE_TARGET_PATH} || \
   (echo "Error going to ${ABSOLUTE_TARGET_PATH}" && exit 1)
 
 
 ## Start Jenkins in current state
 docker-compose up -d
+sleep 2
+
+## Get Jenkins Public URL
+JENKINS_URL="$(docker inspect "$(docker-compose ps \
+    | grep jenkins_1 \
+    | awk '{print $1}'\
+  )" \
+  | grep JENKINS_EXTERNAL_URL \
+  | cut -d'=' -f2 \
+  | cut -d'"' -f1)"
 
 ## Wait for Jenkins Startup
-sleep 2
+
 curl -s -S -L -o /dev/null --fail --retry 30 --retry-delay 5 \
     "${JENKINS_URL}"
 
@@ -43,6 +52,9 @@ echo "Plugin list written in ${PLUGIN_TXT_LIST_FILE}"
 
 # We request a plugin install to latest version for each
 if [ -n "$(cat ${PLUGIN_TXT_LIST_FILE})" ]; then
+  # Get list of plugin per id (no version: we want latest)
+  cat ${PLUGIN_TXT_LIST_FILE} | sed ':a;N;$!ba;s/\n/ /g' > ${PLUGIN_TXT_LIST_FILE}.stripped
+
   docker-compose exec jenkins java -jar "${JENKINS_CLI_PATH}" \
     -s "${JENKINS_PRIVATE_URL}" -auth "${JENKINS_ADMIN_USER}:${JENKINS_ADMIN_PASSWORD}" \
     install-plugin -restart \
@@ -51,6 +63,8 @@ fi
 sleep 5
 # Restart Jenkins
 # docker-compose restart jenkins
+
+popd
 
 # Wait for Jenkins coming back online
 curl -s -S -L -o /dev/null --fail --retry 30 --retry-delay 5 \

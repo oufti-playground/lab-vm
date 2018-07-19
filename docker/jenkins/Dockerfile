@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.121.1-alpine
+FROM jenkins/jenkins:2.121.2-alpine
 
 # Used to provide Custom JVM to all elements (master and agents)
 ARG CUSTOM_JVM_OPTS='-XshowSettings:vm -Djenkins.install.runSetupWizard=false'
