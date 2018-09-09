@@ -16,18 +16,23 @@ you can build the virtual machine and run it with Vagrant
 With Docker and Docker-Compose installed,
 use the commands below to start the workshop's lab locally.
 
+You can set the variable `EXTERNAL_PORT` to change the external port
+to reach the services.
+
 ```bash
 cd ./docker
 docker-compose up -d --build --force-recreate
 ```
 
-and open the URL http://localhost:80 with your web browser.
+and open the URL http://localhost:80 with your web browser
+(or replace "80" by the value provided to the variable `EXTERNAL_PORT`
+if you did so).
 
 You might want to wait a while before having Jenkins ready.
 
 ## Alternative Start (Using VirtualBox's VM)
 
-This alternative required VirtualBox, Packern GNU Make and Vagrant to be installed.
+This alternative required VirtualBox, Packer GNU Make and Vagrant to be installed.
 
 Start by building the VM template for Vagrant (withg VirtualBox as backend):
 

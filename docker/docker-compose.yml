@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.7'
 
 networks:
   default:
@@ -28,8 +28,6 @@ services:
     environment:
       - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
       - EXTERNAL_PORT=${EXTERNAL_PORT}
-      - REGISTRY_URL=${REGISTRY_URL}
-      - REGISTRY_USER=${COMPOSE_PROJECT_NAME:-registry_user}
 
   gitserver:
     build:

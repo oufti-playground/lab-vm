@@ -1,7 +1,12 @@
 
 # CHANGELOG
 
-## Version 1.2.0 
+## Version 1.3.0
+
+* External URL tunable with the environment variable `EXTERNAL_URL`,
+with the default value "80".
+
+## Version 1.2.0
 
 * External URL moved from http://localhost:10000 to http://localhost:80
 * [Alpine2Docker 1.5.0](https://github.com/dduportal/alpine2docker/releases/tag/1.5.0) (Alpine Linux 3.7, Docker 17.05-CE, )
