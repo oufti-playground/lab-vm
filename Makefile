@@ -1,5 +1,5 @@
 
-export BOX_VERSION ?= 1.2.0
+export BOX_VERSION ?= 1.3.0
 export BOX_NAME ?= jenkins-lab-demo
 export BOX_FILE ?= $(CURDIR)/jenkins-lab-demo.box
 GIT_SUBPROJECT := alpine2docker
@@ -14,7 +14,7 @@ lab: clean-lab init-lab start-lab
 
 clean: clean-lab clean-box
 
-box: clean-box build-box test
+box: clean-box build-box test clean-box
 
 docker:
 	cd ./docker && docker-compose build
