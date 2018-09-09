@@ -5,6 +5,7 @@
 
 * External URL tunable with the environment variable `EXTERNAL_URL`,
 with the default value "80".
+* [Alpine2Docker 1.6.0](https://github.com/dduportal/alpine2docker/releases/tag/1.6.0) (Alpine Linux 3.8, Docker 18.03-CE, )
 
 ## Version 1.2.0
 
