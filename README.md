@@ -45,3 +45,11 @@ Then, start the workshop's lab with this command:
 ```bash
 make lab
 ```
+
+You might want to use another port than the default "80":
+use the `EXTERNAL_PORT` environment variable:
+
+```bash
+export EXTERNAL_PORT=10000
+make lab
+```

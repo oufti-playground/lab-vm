@@ -5,7 +5,8 @@ export BOX_FILE ?= $(CURDIR)/jenkins-lab-demo.box
 GIT_SUBPROJECT := alpine2docker
 CUSTOMIZE_DIR := $(GIT_SUBPROJECT)/customize
 TMP_LAB_DIR := ./tmp-lab
-TESTS_URL ?= http://localhost:10000
+EXTERNAL_PORT ?= 10000
+TESTS_URL ?= http://localhost:$(EXTERNAL_PORT)
 export DOCKER_USERNAME ?= dduportal
 
 all: box lab
