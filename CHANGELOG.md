@@ -6,6 +6,13 @@
 * External URL tunable with the environment variable `EXTERNAL_URL`,
 with the default value "80".
 * [Alpine2Docker 1.6.0](https://github.com/dduportal/alpine2docker/releases/tag/1.6.0) (Alpine Linux 3.8, Docker 18.03-CE, )
+* Jenkins:
+  - LTS 2.121.3
+  - Blue Ocean 1.8.5
+  - Agent for Java9 changed (and renamed) to Java11
+* Gitea:
+  - Updated to 1.5.1
+* Docker socket container updated  to Alpine 3.8
 
 ## Version 1.2.0
 

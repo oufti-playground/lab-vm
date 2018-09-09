@@ -1,4 +1,4 @@
-FROM docker/compose:1.21.1
+FROM docker/compose:1.22.0
 LABEL Maintainer="Damien DUPORTAL - gmail.com"
 RUN apk add --no-cache curl docker tini
 COPY ./ /docker

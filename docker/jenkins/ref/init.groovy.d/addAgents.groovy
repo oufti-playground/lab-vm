@@ -17,7 +17,7 @@ def env = System.getenv()
 String customJvmOpts = env['CUSTOM_JVM_OPTS']
 String alpineJdk8Home = '/usr/lib/jvm/java-1.8-openjdk'
 String debianJdk8Home = '/usr/lib/jvm/java-8-openjdk-amd64'
-String debianJdk9Home = '/usr/lib/jvm/java-9-openjdk-amd64'
+String debianJdk11Home = '/usr/lib/jvm/java-11-openjdk-amd64'
 
 credentials_store = Jenkins.instance.getExtensionList(
   'com.cloudbees.plugins.credentials.SystemCredentialsProvider'
@@ -117,15 +117,15 @@ jdk8SSHNodeEnv.add(new Entry("JAVA_HOME","${alpineJdk8Home}"))
 EnvironmentVariablesNodeProperty jdk8SSHNodeEnvPro = new EnvironmentVariablesNodeProperty(jdk8SSHNodeEnv);
 mavenJDK8Node.getNodeProperties().add(jdk8SSHNodeEnvPro)
 
-Slave mavenJDK9Node = new DumbSlave(
-  "maven-jdk9-node",
-  "Node for running Maven with OpenJDK9",
+Slave mavenJDK11Node = new DumbSlave(
+  "maven-jdk11-node",
+  "Node for running Maven with OpenJDK11",
   "/home/jenkins",
   "2",
   Node.Mode.EXCLUSIVE,
-  "jdk9 java9 maven-jdk9 maven-java9 maven3-jdk9 maven3-java9",
+  "jdk11 java11 maven-jdk11 maven-java11 maven3-jdk11 maven3-java11",
   new SSHLauncher(
-    "jenkins-maven-jdk9-node", // HostName
+    "jenkins-maven-jdk11-node", // HostName
     22,
     'ssh-nodes-key', // Credential ID
     customJvmOpts, // JVM Options
@@ -141,10 +141,10 @@ Slave mavenJDK9Node = new DumbSlave(
   new LinkedList()
 )
 
-List<Entry> jdk9SSHNodeEnv = new ArrayList<Entry>();
-jdk9SSHNodeEnv.add(new Entry("JAVA_HOME","${debianJdk9Home}"))
-EnvironmentVariablesNodeProperty jdk9SSHNodeEnvPro = new EnvironmentVariablesNodeProperty(jdk9SSHNodeEnv);
-mavenJDK9Node.getNodeProperties().add(jdk9SSHNodeEnvPro)
+List<Entry> jdk11SSHNodeEnv = new ArrayList<Entry>();
+jdk11SSHNodeEnv.add(new Entry("JAVA_HOME","${debianJdk11Home}"))
+EnvironmentVariablesNodeProperty jdk11SSHNodeEnvPro = new EnvironmentVariablesNodeProperty(jdk11SSHNodeEnv);
+mavenJDK11Node.getNodeProperties().add(jdk11SSHNodeEnvPro)
 
 
 Jenkins.instance.addNode(productionNode)
@@ -153,5 +153,5 @@ println("Added successfully 'docker-node' to Jenkins")
 Jenkins.instance.addNode(mavenJDK8Node)
 println("Added successfully 'maven-jdk8-node' to Jenkins")
 
-Jenkins.instance.addNode(mavenJDK9Node)
-println("Added successfully 'maven-jdk9-node' to Jenkins")
+Jenkins.instance.addNode(mavenJDK11Node)
+println("Added successfully 'maven-jdk11-node' to Jenkins")
