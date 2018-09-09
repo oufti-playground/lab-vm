@@ -5,26 +5,38 @@ VirtualBox + vagrant VM to play with Jenkins.
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
-## Requirements
 
-* This VM needs VirtualBox and Vagrant installed
-* Packer is required to build the VM template
-* A bash Command Line is expected
-* Initialize the submodule project with :
+## Quick Start (Using Docker)
+
+Docker and Docker-Compose are required.
+If you do not want to (or cannot) use Docker,
+you can build the virtual machine and run it with Vagrant
+(heavier but more portable), as described in tghe next section.
+
+With Docker and Docker-Compose installed,
+use the commands below to start the workshop's lab locally.
 
 ```bash
-git submodule update --init --recursive
+cd ./docker
+docker-compose up -d --build --force-recreate
 ```
 
-## How to build the VM template ?
+and open the URL http://localhost:80 with your web browser.
 
+You might want to wait a while before having Jenkins ready.
+
+## Alternative Start (Using VirtualBox's VM)
+
+This alternative required VirtualBox, Packern GNU Make and Vagrant to be installed.
+
+Start by building the VM template for Vagrant (withg VirtualBox as backend):
 
 ```bash
 make box
 ```
 
-## How to try the VM quickly ?
+Then, start the workshop's lab with this command:
 
 ```bash
-make lab # Starts a standalone VM instance outside the build pipeline process
+make lab
 ```
