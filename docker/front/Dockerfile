@@ -7,8 +7,8 @@ COPY ./docs /usr/share/www/html
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod a+x /usr/local/bin/entrypoint.sh
 
-HEALTHCHECK --start-period=3s --interval=10s --retries=3 --timeout=2s \
-  CMD wget 'localhost:${EXTERNAL_PORT}' --spider
+HEALTHCHECK --start-period=5s --interval=2s --retries=5 --timeout=5s \
+  CMD wget localhost:80 --spider
 
 VOLUME ["/etc/nginx","/tmp","/var/cache/nginx","/var/run"]
 
