@@ -125,7 +125,7 @@ Slave mavenJDK11Node = new DumbSlave(
   Node.Mode.EXCLUSIVE,
   "jdk11 java11 maven-jdk11 maven-java11 maven3-jdk11 maven3-java11",
   new SSHLauncher(
-    "jenkins-maven-jdk11-node", // HostName
+    "jenkins-maven-jdknext-node", // HostName
     22,
     'ssh-nodes-key', // Credential ID
     customJvmOpts, // JVM Options
