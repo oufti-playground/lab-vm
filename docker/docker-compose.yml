@@ -1,39 +1,56 @@
 version: '3.7'
 
-networks:
-  default:
-    driver:
-      bridge
-  front:
-    driver:
-      bridge
-
 services:
-  front:
+  reverse-proxy:
+    image: traefik:1.7.2
+    command: --docker
+    ports:
+      - "${EXTERNAL_PORT}:${EXTERNAL_PORT}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  web:
     build: ./front/
     image: ${DOCKER_USERNAME}/oufti-front
     restart: unless-stopped
     read_only: true
-    ports:
-      - "${EXTERNAL_PORT}:${EXTERNAL_PORT}"
     depends_on:
-      - jenkins
-      - gitserver
       - devbox
-    networks:
-      - default
-      - front
+    labels:
+      - "traefik.frontend.rule=Host:localhost"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
       - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
       - EXTERNAL_PORT=${EXTERNAL_PORT}
 
+  jenkins:
+    build: ./jenkins/
+    image: ${DOCKER_USERNAME}/oufti-jenkins
+    read_only: true
+    restart: unless-stopped
+    labels:
+      - "traefik.frontend.rule=PathPrefix:/jenkins"
+      - "traefik.port=8080"
+    volumes:
+      - /var/jenkins_home
+      - /tmp
+    extra_hosts:
+      - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
+    environment:
+      - JENKINS_EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/jenkins
+      - JENKINS_OPTS=--prefix=/jenkins
+
   gitserver:
     build:
       context: ./gitserver/
     image: ${DOCKER_USERNAME}/oufti-gitserver
     restart: unless-stopped
+    depends_on:
+      - "gitserver-db"
+    labels:
+      - "traefik.frontend.rule=PathPrefixStrip:/gitserver"
+      - "traefik.port=3000"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -55,6 +72,8 @@ services:
   gitserver-db:
     image: postgres:10-alpine
     restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
     environment:
       - POSTGRES_USER=gitea
       - POSTGRES_PASSWORD=gitea
@@ -66,20 +85,6 @@ services:
       retries: 3
       start_period: 10s
 
-  jenkins:
-    build: ./jenkins/
-    image: ${DOCKER_USERNAME}/oufti-jenkins
-    read_only: true
-    restart: unless-stopped
-    volumes:
-      - /var/jenkins_home
-      - /tmp
-    extra_hosts:
-      - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
-    environment:
-      - JENKINS_EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/jenkins
-      - JENKINS_OPTS=--prefix=/jenkins
-
   jenkins-production-node:
     build:
       context: ./dind-java-images/
@@ -87,6 +92,8 @@ services:
     image: ${DOCKER_USERNAME}/oufti-jenkins-production-node
     restart: unless-stopped
     privileged: true
+    labels:
+      - "traefik.enable=false"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -99,6 +106,8 @@ services:
     image: ${DOCKER_USERNAME}/oufti-jenkins-maven-jdk8-node
     restart: unless-stopped
     privileged: true
+    labels:
+      - "traefik.enable=false"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -109,6 +118,8 @@ services:
     image: ${DOCKER_USERNAME}/oufti-jenkins-maven-jdknext-node
     restart: unless-stopped
     read_only: true
+    labels:
+      - "traefik.enable=false"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -121,7 +132,9 @@ services:
       target: devbox
     image: ${DOCKER_USERNAME}/oufti-devbox
     restart: unless-stopped
-    read_only: true
+    labels:
+      - "traefik.frontend.rule=PathPrefixStrip:/devbox"
+      - "traefik.port=7681"
     privileged: true
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
@@ -131,6 +144,8 @@ services:
     image: ${DOCKER_USERNAME}/oufti-docker-service
     restart: unless-stopped
     read_only: true
+    labels:
+      - "traefik.enable=false"
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     volumes:
       - /var/run/docker.sock:/docker.sock

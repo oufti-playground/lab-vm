@@ -97,12 +97,19 @@ log_message "== Configuring Git Server"
 
 # We create the first user
 log_message "=== Creating initial user as ${FIRST_USER}"
-curl --fail -v -X POST -s \
-  -F "user_name=${FIRST_USER}" \
-  -F "email=${FIRST_USER}@localhost.local" \
-  -F "password=${FIRST_USER}" \
-  -F "retype=${FIRST_USER}" \
-  "${GITSERVER_BASE_URL}/user/sign_up"
+TIME_TO_WAIT=2
+while true; do
+  curl --fail -v -X POST -s \
+    -F "user_name=${FIRST_USER}" \
+    -F "email=${FIRST_USER}@localhost.local" \
+    -F "password=${FIRST_USER}" \
+    -F "retype=${FIRST_USER}" \
+    "${GITSERVER_BASE_URL}/user/sign_up" && break \
+    || log_message "Could not create initial user ${FIRST_USER}: got an HTTP error. Waiting ${TIME_TO_WAIT}s before retrying"
+
+  sleep "${TIME_TO_WAIT}"
+done
+
 
 if [ -n "${SOURCE_REPO_CONFIG}" ] && [ -f "${SOURCE_REPO_CONFIG}" ]
 then
