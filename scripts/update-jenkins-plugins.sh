@@ -16,22 +16,23 @@ pushd ${ABSOLUTE_TARGET_PATH} || \
 
 
 ## Start Jenkins in current state
-docker-compose up -d
+docker-compose up -d --build --force-recreate -V
 sleep 2
 
 ## Get Jenkins Public URL
-JENKINS_URL="$(docker inspect "$(docker-compose ps \
-    | grep jenkins_1 \
-    | awk '{print $1}'\
-  )" \
-  | grep JENKINS_EXTERNAL_URL \
-  | cut -d'=' -f2 \
-  | cut -d'"' -f1)"
-
-## Wait for Jenkins Startup
-
-curl -s -S -L -o /dev/null --fail --retry 30 --retry-delay 5 \
-    "${JENKINS_URL}"
+JENKINS_URL="http://localhost:80/jenkins"
+COUNTER=0
+MAX_TRIES=60
+WAIT_TIME=5
+until [ "${COUNTER}" -ge "${MAX_TRIES}" ]
+do
+    # If the command fails, just return true, else break of the loop
+    set +e
+    curl -s -S -L -o /dev/null --fail --retry 3 --retry-delay 1 "${JENKINS_URL}" && break || true
+    COUNTER=$((COUNTER+1))
+    sleep "${WAIT_TIME}"
+done
+[ "${COUNTER}" -lt "${MAX_TRIES}" ]
 
 ## Jenkins is started: We update installed plugins
 
