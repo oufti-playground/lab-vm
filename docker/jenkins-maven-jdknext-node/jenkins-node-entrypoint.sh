@@ -6,11 +6,14 @@
 set -ex
 
 write_key() {
-	mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
-	echo "$1" > "${JENKINS_AGENT_HOME}/.ssh/authorized_keys"
-	chown -Rf jenkins:jenkins "${JENKINS_AGENT_HOME}/.ssh"
-	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
+	mkdir -p "${DEFAULT_USER_HOME}/.ssh"
+	echo "$1" > "${DEFAULT_USER_HOME}/.ssh/authorized_keys"
+	chown -Rf jenkins:jenkins "${DEFAULT_USER_HOME}/.ssh"
+	chmod 0700 -R "${DEFAULT_USER_HOME}/.ssh"
 }
+
+# Lauch Docker Engine using parent image's entrypoint script
+bash /usr/local/bin/dind-entrypoint.sh >/dev/stdout 2>&1 &
 
 # Set SSH runtime settings
 if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
