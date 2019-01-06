@@ -62,6 +62,9 @@ RUN apk add --no-cache \
     rng-tools \
     ttyd \
     vim
+# Hack while the alpine package is updated
+RUN curl -sSL -o /usr/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.4.2/ttyd_linux.x86_64 \
+  && chmod a+x /usr/bin/ttyd
 COPY devbox-entrypoint.sh /usr/local/bin/entrypoint.sh
 EXPOSE 7681
 CMD ["/usr/local/bin/entrypoint.sh"]
