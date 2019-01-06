@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   reverse-proxy:
-    image: traefik:1.7.3
+    image: traefik:1.7.6
     command: --docker
     ports:
       - "${EXTERNAL_PORT}:${EXTERNAL_PORT}"
