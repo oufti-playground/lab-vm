@@ -3,15 +3,15 @@
 set -eu -o pipefail
 
 # Set path context
-TARGET_PATH="$(dirname ${0})/../docker"
-ABSOLUTE_TARGET_PATH="$(cd ${TARGET_PATH} && pwd)"
+TARGET_PATH="$(dirname "${0}")/../docker"
+ABSOLUTE_TARGET_PATH="$(cd "${TARGET_PATH}" && pwd -P)"
 
 # Fetch variable from environment or use default values
 JENKINS_PRIVATE_URL=${JENKINS_PRIVATE_URL:-http://localhost:8080/jenkins}
 JENKINS_ADMIN_USER=${JENKINS_ADMIN_USER:-butler}
 JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD:-butler}
 
-pushd ${ABSOLUTE_TARGET_PATH} || \
+pushd "${ABSOLUTE_TARGET_PATH}" || \
   (echo "Error going to ${ABSOLUTE_TARGET_PATH}" && exit 1)
 
 
@@ -28,7 +28,8 @@ until [ "${COUNTER}" -ge "${MAX_TRIES}" ]
 do
     # If the command fails, just return true, else break of the loop
     set +e
-    curl -s -S -L -o /dev/null --fail --retry 3 --retry-delay 1 "${JENKINS_URL}" && break || true
+    curl -s -S -L -o /dev/null --fail --retry 3 --retry-delay 1 "${JENKINS_URL}" && break
+    set -e
     COUNTER=$((COUNTER+1))
     sleep "${WAIT_TIME}"
 done
@@ -44,22 +45,22 @@ docker-compose exec jenkins curl -L -s -S -o "${JENKINS_CLI_PATH}" \
 
 # We fetch the list of plugins
 docker-compose exec jenkins java -jar ${JENKINS_CLI_PATH} \
-  -s ${JENKINS_PRIVATE_URL} -auth "${JENKINS_ADMIN_USER}:${JENKINS_ADMIN_PASSWORD}" \
+  -s "${JENKINS_PRIVATE_URL}" -auth "${JENKINS_ADMIN_USER}:${JENKINS_ADMIN_PASSWORD}" \
   list-plugins \
   | grep ')[[:cntrl:]]*$' \
   | awk '{ print $1 }' \
-  > ${PLUGIN_TXT_LIST_FILE}
+  > "${PLUGIN_TXT_LIST_FILE}"
 echo "Plugin list written in ${PLUGIN_TXT_LIST_FILE}"
 
 # We request a plugin install to latest version for each
-if [ -n "$(cat ${PLUGIN_TXT_LIST_FILE})" ]; then
+if [ -n "$(cat "${PLUGIN_TXT_LIST_FILE}")" ]; then
   # Get list of plugin per id (no version: we want latest)
-  cat ${PLUGIN_TXT_LIST_FILE} | sed ':a;N;$!ba;s/\n/ /g' > ${PLUGIN_TXT_LIST_FILE}.stripped
+  sed ':a;N;$!ba;s/\n/ /g' > "${PLUGIN_TXT_LIST_FILE}.stripped" "${PLUGIN_TXT_LIST_FILE}"
 
   docker-compose exec jenkins java -jar "${JENKINS_CLI_PATH}" \
     -s "${JENKINS_PRIVATE_URL}" -auth "${JENKINS_ADMIN_USER}:${JENKINS_ADMIN_PASSWORD}" \
     install-plugin -restart \
-    $(cat ${PLUGIN_TXT_LIST_FILE} | sed ':a;N;$!ba;s/\n/ /g')
+    "$(sed ':a;N;$!ba;s/\n/ /g' "${PLUGIN_TXT_LIST_FILE}")"
 fi
 sleep 5
 # Restart Jenkins
