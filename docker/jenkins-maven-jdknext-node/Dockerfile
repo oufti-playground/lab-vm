@@ -3,7 +3,7 @@ FROM openjdk:12-alpine
 
 LABEL Maintainer="Damien DUPORTAL <damien.duportal@gmail.com"
 
-ARG CUSTOM_JVM_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XshowSettings:vm"
+ARG CUSTOM_JVM_OPTS="-XshowSettings:vm"
 ENV DEFAULT_USER_HOME=/home/jenkins \
   DEFAULT_USER=jenkins \
   DEFAULT_USER_UID=1000 \

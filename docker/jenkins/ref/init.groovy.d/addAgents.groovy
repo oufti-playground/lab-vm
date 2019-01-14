@@ -69,7 +69,7 @@ Slave productionNode = new DumbSlave(
     22,
     'ssh-nodes-key', // Credential ID
     customJvmOpts, // JVM Options
-    "", // JavaPath
+    "${alpineJdk8Home}/bin/java", // JavaPath
     "", // Prefix Start CMD
     "", // Suffix Start CMD
     15, // Launch Timeout
@@ -99,7 +99,7 @@ Slave mavenJDK8Node = new DumbSlave(
     22,
     'ssh-nodes-key', // Credential ID
     customJvmOpts, // JVM Options
-    "", // JavaPath
+    "${alpineJdk8Home}/bin/java", // JavaPath
     "", // Prefix Start CMD
     "", // Suffix Start CMD
     15, // Launch Timeout
