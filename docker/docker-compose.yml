@@ -3,7 +3,7 @@ version: '3.7'
 services:
   reverse-proxy:
     image: traefik:1.7.7
-    command: --docker
+    command: --docker --entryPoints='Name:http Address::${EXTERNAL_PORT}'
     restart: unless-stopped
     read_only: true
     ports:
@@ -16,10 +16,9 @@ services:
     image: ${DOCKER_USERNAME}/oufti-front
     restart: unless-stopped
     read_only: true
-    depends_on:
-      - devbox
     labels:
       - "traefik.frontend.rule=Host:localhost"
+      - "traefik.docker.port=${EXTERNAL_PORT}"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -33,7 +32,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.frontend.rule=PathPrefix:/jenkins"
-      - "traefik.port=8080"
+      - "traefik.docker.port=8080"
     volumes:
       - /var/jenkins_home
       - /tmp
@@ -52,7 +51,7 @@ services:
       - "gitserver-db"
     labels:
       - "traefik.frontend.rule=PathPrefixStrip:/gitserver"
-      - "traefik.port=3000"
+      - "traefik.docker.port=3000"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
