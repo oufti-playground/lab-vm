@@ -1,5 +1,4 @@
-#FROM openjdk:11-slim
-FROM openjdk:12-alpine
+FROM openjdk:13-alpine
 
 LABEL Maintainer="Damien DUPORTAL <damien.duportal@gmail.com"
 
@@ -20,7 +19,6 @@ RUN apk add --no-cache \
     openjdk8 \
     openssh \
     perl \
-    py-pip \
     ttf-dejavu \
     unzip \
     tar \

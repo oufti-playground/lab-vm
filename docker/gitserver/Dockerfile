@@ -1,4 +1,4 @@
-FROM gitea/gitea:1.6.3
+FROM gitea/gitea:1.8.2
 
 # We need tini to reap child processes
 RUN apk add --no-cache jq tini
@@ -25,6 +25,3 @@ CMD ["bash","/usr/local/bin/entrypoint.sh"]
 
 HEALTHCHECK --start-period=10s --interval=10s --retries=3 --timeout=2s \
   CMD wget localhost:3000 --spider
-
-HEALTHCHECK --start-period=10s --interval=10s --retries=3 --timeout=2s \
-  CMD nc -z localhost 5022

@@ -22,7 +22,6 @@ RUN apk add --no-cache \
     openjdk8 \
     openssh \
     perl \
-    py-pip \
     ttf-dejavu \
     unzip \
     tar \
@@ -39,7 +38,9 @@ RUN apk add --no-cache \
   && addgroup "${DEFAULT_USER}" dockremap \
   && ln -s /usr/local/bin/docker* /usr/bin/ \
   # Install latest Docker-compose
-  && pip install --no-cache-dir "docker-compose" \
+  && apk add --no-cache py3-pip py3-paramiko \
+  && pip3 install --no-cache-dir --upgrade pip \
+  && pip3 install --no-cache-dir "docker-compose==1.24.0" \
   # Tune potential Maven executions
   && sed -i '/MAVEN_OPTS/d' /etc/mavenrc \
   && echo 'MAVEN_OPTS="'${CUSTOM_JVM_OPTS}'"' >> /etc/mavenrc
@@ -62,9 +63,9 @@ RUN apk add --no-cache \
     rng-tools \
     ttyd \
     vim
-# Hack while the alpine package is updated
-RUN curl -sSL -o /usr/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.4.2/ttyd_linux.x86_64 \
-  && chmod a+x /usr/bin/ttyd
+# Uncomment and set to latest version if the Alpine package is not OK
+# RUN curl -sSL -o /usr/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.4.2/ttyd_linux.x86_64 \
+#   && chmod a+x /usr/bin/ttyd
 COPY devbox-entrypoint.sh /usr/local/bin/entrypoint.sh
 EXPOSE 7681
 CMD ["/usr/local/bin/entrypoint.sh"]

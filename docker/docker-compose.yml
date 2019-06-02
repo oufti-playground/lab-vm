@@ -1,10 +1,14 @@
-version: '3.7'
+version: '2.4'
 
 services:
   reverse-proxy:
-    image: traefik:1.7.7
-    command: --docker --entryPoints='Name:http Address::${EXTERNAL_PORT}'
+    image: traefik:2.0
+    command:
+      - "--providers.docker"
+      - "--entryPoints=Name:http Address::${EXTERNAL_PORT}"
     restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
     read_only: true
     ports:
       - "${EXTERNAL_PORT}:${EXTERNAL_PORT}"
@@ -17,8 +21,9 @@ services:
     restart: unless-stopped
     read_only: true
     labels:
-      - "traefik.frontend.rule=Host:localhost"
-      - "traefik.docker.port=${EXTERNAL_PORT}"
+      - "traefik.http.routers.web.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/`)"
+      - "traefik.http.services.web.LoadBalancer.server.Port=${EXTERNAL_PORT}"
+      - "traefik.http.routers.web.service=web"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -31,8 +36,9 @@ services:
     read_only: true
     restart: unless-stopped
     labels:
-      - "traefik.frontend.rule=PathPrefix:/jenkins"
-      - "traefik.docker.port=8080"
+      - "traefik.http.routers.jenkins.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/jenkins`)"
+      - "traefik.http.services.jenkins.LoadBalancer.server.Port=8080"
+      - "traefik.http.routers.jenkins.service=jenkins"
     volumes:
       - /var/jenkins_home
       - /tmp
@@ -43,15 +49,15 @@ services:
       - JENKINS_OPTS=--prefix=/jenkins
 
   gitserver:
-    build:
-      context: ./gitserver/
+    build: ./gitserver/
     image: ${DOCKER_USERNAME}/oufti-gitserver
     restart: unless-stopped
-    depends_on:
-      - "gitserver-db"
     labels:
-      - "traefik.frontend.rule=PathPrefixStrip:/gitserver"
-      - "traefik.docker.port=3000"
+      - "traefik.http.routers.gitserver.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/gitserver`)"
+      - "traefik.http.middlewares.gitserver-stripprefix.stripprefix.prefixes=/gitserver"
+      - "traefik.http.services.gitserver-svc.LoadBalancer.server.Port=3000"
+      - "traefik.http.routers.gitserver.service=gitserver-svc"
+      - "traefik.http.routers.gitserver.middlewares=gitserver-stripprefix"
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -65,22 +71,6 @@ services:
       - ./gitserver/repositories.json:/tmp/repositories.json:ro
     healthcheck:
       test: ["CMD", "wget", "http://butler:butler@localhost:3000/butler/demoapp","--spider"]
-      interval: 10s
-      timeout: 2s
-      retries: 3
-      start_period: 10s
-
-  gitserver-db:
-    image: postgres:10-alpine
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=false"
-    environment:
-      - POSTGRES_USER=gitea
-      - POSTGRES_PASSWORD=gitea
-      - POSTGRES_DB=gitea
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost","5432"]
       interval: 10s
       timeout: 2s
       retries: 3
@@ -134,8 +124,11 @@ services:
     image: ${DOCKER_USERNAME}/oufti-devbox
     restart: unless-stopped
     labels:
-      - "traefik.frontend.rule=PathPrefixStrip:/devbox"
-      - "traefik.port=7681"
+      - "traefik.http.routers.devbox.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/devbox`)"
+      - "traefik.http.middlewares.devbox-stripprefix.stripprefix.prefixes=/devbox"
+      - "traefik.http.services.devbox-svc.LoadBalancer.server.Port=7681"
+      - "traefik.http.routers.devbox.service=devbox-svc"
+      - "traefik.http.routers.devbox.middlewares=devbox-stripprefix"
     privileged: true
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"

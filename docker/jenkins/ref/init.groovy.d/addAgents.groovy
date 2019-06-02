@@ -16,7 +16,7 @@ global_domain = Domain.global()
 def env = System.getenv()
 String customJvmOpts = env['CUSTOM_JVM_OPTS']
 String alpineJdk8Home = '/usr/lib/jvm/java-1.8-openjdk'
-String alpineJdk12Home = '/opt/openjdk-12'
+String alpineJdk13Home = '/opt/3'
 
 credentials_store = Jenkins.instance.getExtensionList(
   'com.cloudbees.plugins.credentials.SystemCredentialsProvider'
@@ -116,13 +116,13 @@ jdk8SSHNodeEnv.add(new Entry("JAVA_HOME","${alpineJdk8Home}"))
 EnvironmentVariablesNodeProperty jdk8SSHNodeEnvPro = new EnvironmentVariablesNodeProperty(jdk8SSHNodeEnv);
 mavenJDK8Node.getNodeProperties().add(jdk8SSHNodeEnvPro)
 
-Slave mavenJDK12Node = new DumbSlave(
-  "maven-jdk12-node",
-  "Node for running Maven with OpenJDK12",
+Slave mavenJDK13Node = new DumbSlave(
+  "maven-jdk13-node",
+  "Node for running Maven with OpenJDK13",
   "/home/jenkins",
   "2",
   Node.Mode.EXCLUSIVE,
-  "jdk12 java12 maven-jdk12 maven-java12 maven3-jdk12 maven3-java12",
+  "jdk13 java13 maven-jdk13 maven-java13 maven3-jdk13 maven3-java13",
   new SSHLauncher(
     "jenkins-maven-jdknext-node", // HostName
     22,
@@ -140,10 +140,10 @@ Slave mavenJDK12Node = new DumbSlave(
   new LinkedList()
 )
 
-List<Entry> jdk12SSHNodeEnv = new ArrayList<Entry>();
-jdk12SSHNodeEnv.add(new Entry("JAVA_HOME","${alpineJdk12Home}"))
-EnvironmentVariablesNodeProperty jdk12SSHNodeEnvPro = new EnvironmentVariablesNodeProperty(jdk12SSHNodeEnv);
-mavenJDK12Node.getNodeProperties().add(jdk12SSHNodeEnvPro)
+List<Entry> jdk13SSHNodeEnv = new ArrayList<Entry>();
+jdk13SSHNodeEnv.add(new Entry("JAVA_HOME","${alpineJdk13Home}"))
+EnvironmentVariablesNodeProperty jdk13SSHNodeEnvPro = new EnvironmentVariablesNodeProperty(jdk13SSHNodeEnv);
+mavenJDK13Node.getNodeProperties().add(jdk13SSHNodeEnvPro)
 
 
 Jenkins.instance.addNode(productionNode)
@@ -152,5 +152,5 @@ println("Added successfully 'docker-node' to Jenkins")
 Jenkins.instance.addNode(mavenJDK8Node)
 println("Added successfully 'maven-jdk8-node' to Jenkins")
 
-Jenkins.instance.addNode(mavenJDK12Node)
-println("Added successfully 'maven-jdk12-node' to Jenkins")
+Jenkins.instance.addNode(mavenJDK13Node)
+println("Added successfully 'maven-jdk13-node' to Jenkins")

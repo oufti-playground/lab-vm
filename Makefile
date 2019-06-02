@@ -1,5 +1,5 @@
 
-export BOX_VERSION ?= 1.3.0
+export BOX_VERSION ?= 1.4.0
 export BOX_NAME ?= jenkins-lab-demo
 export BOX_FILE ?= $(CURDIR)/jenkins-lab-demo.box
 GIT_SUBPROJECT := alpine2docker
