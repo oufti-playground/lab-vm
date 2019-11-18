@@ -1,0 +1,135 @@
+security:
+  remotingCLI:
+    enabled: false
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - basicSSHUserPrivateKey:
+              scope: SYSTEM
+              id: ssh-nodes-key
+              username: jenkins
+              description: "SSH Key for the Agents."
+              privateKeySource:
+                directEntry:
+                  privateKey: ${agent_private_key}
+jenkins:
+  agentProtocols:
+  - "JNLP4-connect"
+  - "Ping"
+  remotingSecurity:
+    enabled: true
+  authorizationStrategy: 
+    globalMatrix:
+      grantedPermissions:
+        - Overall/Read:anonymous
+        - Job/Read:anonymous
+        - View/Read:anonymous
+        - Overall/Administer:${JENKINS_ADMIN}
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: false
+  labelString: "master"
+  mode: EXCLUSIVE
+  nodes:
+  - permanent:
+      labelString: "jdknext javanext maven-jdknext maven-javanext maven3-jdknext maven3-javanext"
+      launcher:
+        sSHLauncher:
+          credentialsId: "ssh-nodes-key"
+          host: "jenkins-maven-jdknext-node"
+          javaPath: "/usr/lib/jvm/java-1.8-openjdk/bin/java"
+          jvmOptions: "-XshowSettings:vm"
+          launchTimeoutSeconds: 15
+          maxNumRetries: 3
+          port: 22
+          retryWaitTime: 5
+          sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+      mode: EXCLUSIVE
+      name: "maven-jdknext-node"
+      nodeDescription: "Node for running Maven with Openjdknext"
+      nodeProperties:
+      - envVars:
+          env:
+          - key: "JAVA_HOME"
+            value: "/opt/openjdk-13"
+      remoteFS: "/home/jenkins"
+      userId: "SYSTEM"
+  - permanent:
+      labelString: "jdk8 java8 maven maven-jdk8 maven-java8 maven3 maven3-jdk8 maven3-java8\
+        \ docker"
+      launcher:
+        sSHLauncher:
+          credentialsId: "ssh-nodes-key"
+          host: "jenkins-maven-jdk8-node"
+          javaPath: "/usr/lib/jvm/java-1.8-openjdk/bin/java"
+          jvmOptions: "-XshowSettings:vm"
+          launchTimeoutSeconds: 15
+          maxNumRetries: 3
+          port: 22
+          retryWaitTime: 5
+          sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+      name: "maven-jdk8-node"
+      nodeDescription: "Node for running Maven with OpenJDK8, or Docker workloads"
+      nodeProperties:
+      - envVars:
+          env:
+          - key: "JAVA_HOME"
+            value: "/usr/lib/jvm/java-1.8-openjdk"
+      numExecutors: 4
+      remoteFS: "/home/jenkins"
+      userId: "SYSTEM"
+  - permanent:
+      labelString: "deploy production docker"
+      launcher:
+        sSHLauncher:
+          credentialsId: "ssh-nodes-key"
+          host: "jenkins-production-node"
+          javaPath: "/usr/lib/jvm/java-1.8-openjdk/bin/java"
+          jvmOptions: "-XshowSettings:vm"
+          launchTimeoutSeconds: 15
+          maxNumRetries: 3
+          port: 22
+          retryWaitTime: 5
+          sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+      mode: EXCLUSIVE
+      name: "production-node"
+      nodeDescription: "Node for production deployment, and Docker Workloads"
+      nodeProperties:
+      - envVars:
+          env:
+          - key: "DOCKER_HOST"
+            value: "unix:///var/run/docker.sock"
+          - key: "JAVA_HOME"
+            value: "/usr/lib/jvm/java-1.8-openjdk"
+      numExecutors: 1
+      remoteFS: "/home/jenkins"
+      userId: "SYSTEM"
+  numExecutors: 0
+  quietPeriod: 0
+  scmCheckoutRetryCount: 0
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+      - id: "${JENKINS_ADMIN}"
+        password: "${JENKINS_ADMIN}"
+  slaveAgentPort: 50000
+unclassified:
+  location:
+    adminAddress: ${JENKINS_ADMIN}@
+    url: ${JENKINS_ROOT_URL}
+  globalLibraries:
+    libraries:
+    - defaultVersion: "master"
+      implicit: true
+      name: "pipeline-libraries"
+      retriever:
+        modernSCM:
+          scm:
+            git:
+              remote: "http://gitserver:3000/${JENKINS_ADMIN}/pipeline-libraries.git"
+              traits:
+              - headWildcardFilter:
+                  includes: "*"
