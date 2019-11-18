@@ -1,4 +1,9 @@
 
+security:
+  queueItemAuthenticator:
+    authenticators:
+    - global:
+        strategy: "systemAuthorizationStrategy"
 credentials:
   system:
     domainCredentials:
