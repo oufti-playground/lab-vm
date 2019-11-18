@@ -1,4 +1,4 @@
-FROM docker:18.09-dind AS dind-java-base-image
+FROM docker:19.03-dind AS dind-java-base-image
 
 ARG CUSTOM_JVM_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XshowSettings:vm"
 ENV DEFAULT_USER_HOME=/home/jenkins \

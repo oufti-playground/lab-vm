@@ -1,4 +1,4 @@
-FROM openjdk:13-alpine
+FROM openjdk:14-alpine
 
 LABEL Maintainer="Damien DUPORTAL <damien.duportal@gmail.com"
 

@@ -127,7 +127,7 @@ services:
     restart: unless-stopped
     privileged: true
     labels:
-      - "traefik.enable=false"
+      - traefik.enable=false
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -141,7 +141,7 @@ services:
     restart: unless-stopped
     privileged: true
     labels:
-      - "traefik.enable=false"
+      - traefik.enable=false
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -153,7 +153,7 @@ services:
     restart: unless-stopped
     read_only: true
     labels:
-      - "traefik.enable=false"
+      - traefik.enable=false
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
@@ -182,7 +182,7 @@ services:
     restart: unless-stopped
     read_only: true
     labels:
-      - "traefik.enable=false"
+      - traefik.enable=false
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     volumes:
       - /var/run/docker.sock:/docker.sock
