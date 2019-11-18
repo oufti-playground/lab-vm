@@ -1,0 +1,5 @@
+## Traefik Dynamic Configuration
+tls:
+  certificates:
+    - certFile: /certs/localhost+5.pem
+      keyFile: /certs/localhost+5-key.pem

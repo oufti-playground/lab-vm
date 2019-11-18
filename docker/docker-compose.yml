@@ -2,18 +2,34 @@ version: '3.7'
 
 services:
   reverse-proxy:
-    image: traefik:2.0
+    image: traefik:v2.0
     command:
-      - "--providers.docker"
-      - "--entryPoints=Name:http Address::${EXTERNAL_PORT}"
+      - --api.dashboard=true
+      - --providers.docker
+      - --providers.file.filename=/certs/traefik-dyn.yml
+      - --entryPoints.web.address=:${EXTERNAL_HTTP_PORT}
+      - --entryPoints.websecure.address=:${EXTERNAL_HTTPS_PORT}
+      - --entryPoints.jnlp.address=:${EXTERNAL_JNLP_PORT}
+      - --entryPoints.git-ssh.address=:${EXTERNAL_GITSSH_PORT}
     restart: unless-stopped
     labels:
-      - "traefik.enable=false"
+      - traefik.http.routers.traefik.rule=Host(`traefik.${EXTERNAL_DOMAIN}`)
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.redirs.rule=hostregexp(`{host:.+}`)
+      - traefik.http.routers.redirs.entrypoints=web
+      - traefik.http.routers.redirs.middlewares=redirect-to-https
     read_only: true
     ports:
-      - "${EXTERNAL_PORT}:${EXTERNAL_PORT}"
+      - "${EXTERNAL_HTTP_PORT}:${EXTERNAL_HTTP_PORT}"
+      - "${EXTERNAL_HTTPS_PORT}:${EXTERNAL_HTTPS_PORT}"
+      - "${EXTERNAL_JNLP_PORT}:${EXTERNAL_JNLP_PORT}"
+      - "${EXTERNAL_GITSSH_PORT}:${EXTERNAL_GITSSH_PORT}"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/certs
 
   web:
     image: nginx:1.16-alpine
