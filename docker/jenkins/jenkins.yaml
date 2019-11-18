@@ -1,6 +1,4 @@
-security:
-  remotingCLI:
-    enabled: false
+
 credentials:
   system:
     domainCredentials:
@@ -35,7 +33,7 @@ jenkins:
   - permanent:
       labelString: "jdknext javanext maven-jdknext maven-javanext maven3-jdknext maven3-javanext"
       launcher:
-        sSHLauncher:
+        ssh:
           credentialsId: "ssh-nodes-key"
           host: "jenkins-maven-jdknext-node"
           javaPath: "/usr/lib/jvm/java-1.8-openjdk/bin/java"
@@ -52,14 +50,13 @@ jenkins:
       - envVars:
           env:
           - key: "JAVA_HOME"
-            value: "/opt/openjdk-13"
+            value: "/opt/openjdk-14"
       remoteFS: "/home/jenkins"
       userId: "SYSTEM"
   - permanent:
-      labelString: "jdk8 java8 maven maven-jdk8 maven-java8 maven3 maven3-jdk8 maven3-java8\
-        \ docker"
+      labelString: "jdk8 java8 maven maven-jdk8 maven-java8 maven3 maven3-jdk8 maven3-java8 docker"
       launcher:
-        sSHLauncher:
+        ssh:
           credentialsId: "ssh-nodes-key"
           host: "jenkins-maven-jdk8-node"
           javaPath: "/usr/lib/jvm/java-1.8-openjdk/bin/java"
@@ -82,7 +79,7 @@ jenkins:
   - permanent:
       labelString: "deploy production docker"
       launcher:
-        sSHLauncher:
+        ssh:
           credentialsId: "ssh-nodes-key"
           host: "jenkins-production-node"
           javaPath: "/usr/lib/jvm/java-1.8-openjdk/bin/java"

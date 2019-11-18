@@ -72,15 +72,19 @@ services:
       - jenkins-maven-jdk8-node
       - jenkins-maven-jdknext-node
     labels:
-      - "traefik.http.routers.jenkins.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/jenkins`)"
-      - "traefik.http.services.jenkins.LoadBalancer.server.Port=8080"
-      - "traefik.http.routers.jenkins.service=jenkins"
+      - traefik.http.routers.jenkins.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/jenkins`)
+      - traefik.http.routers.jenkins.tls=true
+      - traefik.http.routers.jenkins.entrypoints=websecure
+      - traefik.http.services.jenkins.LoadBalancer.server.Port=8080
+      - traefik.tcp.routers.jenkins-jnlp.rule=HostSNI(`*`)
+      - traefik.tcp.routers.jenkins-jnlp.entrypoints=jnlp
+      - traefik.tcp.services.jenkins-jnlp.LoadBalancer.server.Port=50000
     volumes:
       - /var/jenkins_home
       - /run
       - /tmp
     environment:
-      - JENKINS_ROOT_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/jenkins
+      - JENKINS_ROOT_URL=https://${EXTERNAL_DOMAIN}:${EXTERNAL_HTTPS_PORT}/jenkins
       - JENKINS_OPTS=--prefix=/jenkins
       - JENKINS_ADMIN=butler
       - AGENT_PRIVATE_KEY_FILE=/run/secrets/agent_private_key
