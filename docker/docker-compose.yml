@@ -5,6 +5,7 @@ services:
     image: traefik:v2.0
     command:
       - --api.dashboard=true
+      - --ping=true
       - --providers.docker
       - --providers.file.filename=/certs/traefik-dyn.yml
       - --entryPoints.web.address=:${EXTERNAL_HTTP_PORT}
@@ -30,6 +31,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./certs:/certs
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:8080/ping","--spider"]
+      interval: 2s
+      timeout: 1s
+      retries: 3
+      start_period: 2s
 
   web:
     image: nginx:1.16-alpine
