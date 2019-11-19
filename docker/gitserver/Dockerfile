@@ -1,4 +1,4 @@
-FROM gitea/gitea:1.8.2
+FROM gitea/gitea:1.10.0
 
 # We need tini to reap child processes
 RUN apk add --no-cache jq tini

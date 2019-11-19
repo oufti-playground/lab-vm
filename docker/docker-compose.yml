@@ -95,29 +95,32 @@ services:
       - JENKINS_OPTS=--prefix=/jenkins
       - JENKINS_ADMIN=butler
       - AGENT_PRIVATE_KEY_FILE=/run/secrets/agent_private_key
-
+  
   gitserver:
     build: ./gitserver/
     image: ${DOCKER_USERNAME}/oufti-gitserver
     restart: unless-stopped
-    depends_on:
-      - jenkins
     labels:
-      - "traefik.http.routers.gitserver.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/gitserver`)"
-      - "traefik.http.middlewares.gitserver-stripprefix.stripprefix.prefixes=/gitserver"
-      - "traefik.http.services.gitserver-svc.LoadBalancer.server.Port=3000"
-      - "traefik.http.routers.gitserver.service=gitserver-svc"
-      - "traefik.http.routers.gitserver.middlewares=gitserver-stripprefix"
+      - traefik.http.routers.gitserver.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/gitserver`)
+      - traefik.http.routers.gitserver.tls=true
+      - traefik.http.routers.gitserver.entrypoints=websecure
+      - traefik.http.routers.gitserver.middlewares=gitserver-stripprefix
+      - traefik.http.middlewares.gitserver-stripprefix.stripprefix.prefixes=/gitserver
+      - traefik.http.services.gitserver.LoadBalancer.server.Port=3000
+
+      - traefik.tcp.routers.gitserver-ssh.rule=HostSNI(`*`)
+      - traefik.tcp.routers.gitserver-ssh.entrypoints=gitssh
+      - traefik.tcp.services.gitserver-ssh.LoadBalancer.server.Port=5022
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
     environment:
-      - EXTERNAL_URL=http://${EXTERNAL_DOMAIN}:${EXTERNAL_PORT}/gitserver
+      - EXTERNAL_URL=https://${EXTERNAL_DOMAIN}:${EXTERNAL_HTTPS_PORT}/gitserver
       - EXTERNAL_DOMAIN=${EXTERNAL_DOMAIN}
       - FIRST_USER=butler
       - LOAD_SSH_KEY_FROM_JENKINS=true # Autoload the BlueOcean SSH Key into Gitea
       - SOURCE_REPO_CONFIG=/tmp/repositories.json
     volumes:
-      - /app/data
+      - gitserver-data:/app/data:rw
       - ./gitserver/repositories.json:/tmp/repositories.json:ro
     healthcheck:
       test: ["CMD", "wget", "http://butler:butler@localhost:3000/butler/demoapp","--spider"]
@@ -193,6 +196,10 @@ services:
     command: tcp-listen:2375,reuseaddr,fork unix:/docker.sock
     volumes:
       - /var/run/docker.sock:/docker.sock
+
+
+volumes:
+  gitserver-data:
 
 secrets:
   agent_private_key:

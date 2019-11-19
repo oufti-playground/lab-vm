@@ -86,6 +86,7 @@ fi
 # Waiting for the Gitserver to start
 TIME_TO_WAIT=2
 while true; do
+  # shellcheck disable=SC2015
   curl -sSL -o /dev/null --fail "${GITSERVER_BASE_URL}" \
   && break ||
     log_message "Gitserver still not started, waiting ${TIME_TO_WAIT}s before retrying"
@@ -99,6 +100,7 @@ log_message "== Configuring Git Server"
 log_message "=== Creating initial user as ${FIRST_USER}"
 TIME_TO_WAIT=2
 while true; do
+  # shellcheck disable=SC2015
   curl --fail -v -X POST -s \
     -F "user_name=${FIRST_USER}" \
     -F "email=${FIRST_USER}@localhost.local" \
