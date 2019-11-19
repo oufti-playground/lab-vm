@@ -7,7 +7,8 @@ ENV DEFAULT_USER_HOME=/home/jenkins \
   DEFAULT_USER=jenkins \
   DEFAULT_USER_UID=1000 \
   LANG=C.UTF-8 \
-  CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS}
+  CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS} \
+  GIT_SSL_NO_VERIFY=true
 
 RUN apk add --no-cache \
     bash \

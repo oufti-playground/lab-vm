@@ -10,7 +10,9 @@ ENV DEFAULT_USER_HOME=/home/jenkins \
   DOCKER_IMAGE_CACHE_DIR=/docker-cache \
   START_DOCKER="true" \
   DOCKER_STORAGE_DRIVER="overlay2" \
-  CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS}
+  CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS} \
+  GIT_SSL_NO_VERIFY=true
+
 # Install packages
 RUN apk add --no-cache \
     bash \
