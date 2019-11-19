@@ -177,11 +177,12 @@ services:
     image: ${DOCKER_USERNAME}/oufti-devbox
     restart: unless-stopped
     labels:
-      - "traefik.http.routers.devbox.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/devbox`)"
-      - "traefik.http.middlewares.devbox-stripprefix.stripprefix.prefixes=/devbox"
-      - "traefik.http.services.devbox.LoadBalancer.server.Port=7681"
-      - "traefik.http.routers.devbox.service=devbox"
-      - "traefik.http.routers.devbox.middlewares=devbox-stripprefix"
+      - traefik.http.routers.devbox.rule=Host(`${EXTERNAL_DOMAIN}`) && PathPrefix(`/devbox`)
+      - traefik.http.routers.devbox.entrypoints=websecure
+      - traefik.http.routers.devbox.middlewares=devbox-stripprefix
+      - traefik.http.routers.devbox.tls=true
+      - traefik.http.middlewares.devbox-stripprefix.stripprefix.prefixes=/devbox
+      - traefik.http.services.devbox-svc.LoadBalancer.server.Port=7681
     privileged: true
     extra_hosts:
       - "${EXTERNAL_DOMAIN}:${DOCKER_BRIDGE_IP}"
