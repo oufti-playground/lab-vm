@@ -1,7 +1,7 @@
 FROM jenkins/jenkins:2.190.2-alpine
 
 # Used to provide Custom JVM to all elements (master and agents)
-ARG CUSTOM_JVM_OPTS='-XshowSettings:vm -Djenkins.install.runSetupWizard=false'
+ARG CUSTOM_JVM_OPTS='-XshowSettings:vm -Djenkins.install.runSetupWizard=false -XX:+UseG1GC'
 ENV CUSTOM_JVM_OPTS=${CUSTOM_JVM_OPTS} \
   CASC_JENKINS_CONFIG=/usr/share/jenkins/jenkins.yaml \
   JAVA_OPTS="${CUSTOM_JVM_OPTS}"
