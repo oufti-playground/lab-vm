@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -eux -o pipefail
 
@@ -10,18 +10,14 @@ uptime && date
 sed -i 's/quiet/quiet cgroup_enable=memory swapaccount=1/' /boot/extlinux.conf
 
 
-### Install Docker
-apk --no-cache add docker py-pip docker-bash-completion
+### Install Docker and Compose
+apk --no-cache add docker docker-bash-completion docker-compose
 
 service docker stop
 addgroup root docker
 addgroup "${BASE_USER}" docker
 service docker start
 rc-update add docker boot
-
-### Install Docker-compose
-pip install --no-cache-dir --upgrade pip
-pip install --no-cache-dir "docker-compose"
 
 ### Reboot now
 reboot now

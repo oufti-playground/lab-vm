@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 18/11/2019 (1.8.1)
+
+- Bump Alpine Linux to 3.10.3
+- Bump Docker to 18.09.8
+- Bump Docker-Compose to 1.24.1 as native package
+
+## 23/06/2019 (1.8.0)
+
+- Bump Alpine Linux to 3.10.0
+- Bump Docker to 18.09.6
+
+## 02/06/2019 (1.7.0)
+
+- Bump Alpine Linux to 3.9.4
+- Bump Docker to 18.09.1
+- Bump Docker-compose to 1.24.0
+
 ## 13/01/2019 (1.6.2)
 
 - Upgrade to Alpine Linux 3.8.2
