@@ -8,7 +8,7 @@ then
 fi
 
 ## Global Utility Variables
-CURL_OPTS="--fail -v -s -L"
+CURL_OPTS="--fail --verbose --insecure --silent --show-error --location"
 export CURL_OPTS
 
 ## Global Utility Functions
