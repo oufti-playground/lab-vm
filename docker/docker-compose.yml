@@ -11,7 +11,7 @@ services:
       - --entryPoints.web.address=:${EXTERNAL_HTTP_PORT}
       - --entryPoints.websecure.address=:${EXTERNAL_HTTPS_PORT}
       - --entryPoints.jnlp.address=:${EXTERNAL_JNLP_PORT}
-      - --entryPoints.git-ssh.address=:${EXTERNAL_GITSSH_PORT}
+      - --entryPoints.gitssh.address=:${EXTERNAL_GITSSH_PORT}
     restart: unless-stopped
     labels:
       - traefik.http.routers.traefik.rule=Host(`traefik.${EXTERNAL_DOMAIN}`)
